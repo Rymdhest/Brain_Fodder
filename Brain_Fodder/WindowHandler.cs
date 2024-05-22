@@ -5,6 +5,7 @@ using OpenTK.Windowing.Common.Input;
 using OpenTK.Windowing.Desktop;
 using System.Diagnostics;
 using OpenTK.Input;
+using OpenTK.Audio.OpenAL;
 namespace SpaceEngine.RenderEngine
 {
     internal class WindowHandler
@@ -30,7 +31,7 @@ namespace SpaceEngine.RenderEngine
             nws.AutoLoadBindings = true;
             nws.Title = title;
             nws.ClientSize = resolution;
-            nws.Location = new Vector2i(2000, 100);
+            nws.Location = new Vector2i(20, 100);
 
             gws.UpdateFrequency = 60;
 

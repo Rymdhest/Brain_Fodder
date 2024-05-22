@@ -49,17 +49,37 @@ namespace SpaceEngine.RenderEngine
             int[] indicesLine = { 0, 1, 2, 3, 0, 2 };
             lineBase = glLoader.loadToVAO(positionsLine, indicesLine);
 
-            circles.Add(new Circle(WindowHandler.getCenter(), 10));
+            border = new Ring(WindowHandler.getCenter(), WindowHandler.getResolution().X / 2f, 1.0f);
+            rings.Add(border);
+            int numballs = 11;
+            float fill = .5f;
+            for(int i = 0; i<numballs; i++)
+            {
+                float spawnLength = border.getInnerRadius()*2f*fill;
+                float spawnStartX = -border.getInnerRadius()*fill;
+                float percent = i/(float)(numballs-1);
+                float x =spawnStartX+ percent*spawnLength;
+                Vector2 spawn = WindowHandler.getCenter() + new Vector2(x, 0);
 
-            circles.Add(new Circle(new Vector2(100, 100), 10));
-            circles.Add(new Circle(new Vector2(200, 300), 10));
-
-            rings.Add(new Ring(WindowHandler.getCenter(), WindowHandler.getResolution().X/2f, 2.0f));
+                float r = 0.0f;
+                float g = MathF.Abs(percent-0.5f)*2f;
+                float b = 1.0f-MathF.Abs(percent - 0.5f)*2f;
+                
+                addBall(spawn, new Vector3(r, g, b));
+            }
         }
 
-        private void addBall()
+        private void addBall(Vector2 spawnPos, Vector3 color)
         {
-            BouncyBall ball = new BouncyBall(WindowHandler.getCenter(), new Vector2(), 10);
+            float speed = 100;
+            //Vector2 spawnPos = WindowHandler.getCenter() + MyMath.rng2DMinusPlus()*0;
+            //spawnPos.X += MyMath.rngMinusPlus() * 100;
+            Vector2 velocity = new Vector2(speed * MyMath.rngMinusPlus(), speed * MyMath.rngMinusPlus());
+            velocity = new Vector2(0, speed);
+            BouncyBall ball = new BouncyBall(spawnPos, velocity, 8);
+
+            ball.Model.Color = color;
+
             balls.Add(ball);
             circles.Add(ball.Model);
         }
@@ -72,6 +92,7 @@ namespace SpaceEngine.RenderEngine
             GL.Enable(EnableCap.CullFace);
             GL.CullFace(CullFaceMode.Back);
             GL.Enable(EnableCap.Blend);
+            GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.One);
             GL.ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
         }
@@ -83,8 +104,6 @@ namespace SpaceEngine.RenderEngine
    
         public void render()
         {
-
-
             Vector2 from = new Vector2(100, 100);
             Vector2 to = new Vector2(200, 200);
             float width = 10.0f;
@@ -93,9 +112,6 @@ namespace SpaceEngine.RenderEngine
             renderRings();
             rendercircles();
             renderLines();
-
-
-
 
             finishFrame();
         }
@@ -158,19 +174,41 @@ namespace SpaceEngine.RenderEngine
 
         public void update(float delta)
         {
-            foreach (Circle circle in circles)
+            foreach (BouncyBall ball in balls)
             {
-                circle.Transformation.position.Y += MyMath.rngMinusPlus() * delta * 500f;
-                circle.Transformation.position.X += MyMath.rngMinusPlus() * delta * 500f; ;
-            }
-            foreach (Line line in lines)
-            {
-                line.setEnd(circles[0].Transformation.position);
+                ball.Model.Transformation.position += ball.Velocity * delta;
+
+                if (Vector2.Distance( ball.Model.Transformation.position, border.Transformation.position)+ball.Model.Radius > border.getInnerRadius())
+                {
+                    ball.Velocity = ReflectCircleCollision(ball.Velocity, ball.Model.Transformation.position, border.Transformation.position);
+                    ball.Velocity *= 1.05f;
+                }
             }
         }
         public void onResize(ResizeEventArgs eventArgs)
         {
             GL.Viewport(0, 0, WindowHandler.gameWindow.ClientSize.X, WindowHandler.gameWindow.ClientSize.Y);
+        }
+
+        private Vector2 ReflectCircleCollision(Vector2 velocity, Vector2 point, Vector2 center)
+        {
+            // Normal vector at the point of collision
+            float Nx = point.X - center.X;
+            float Ny = point.Y - center.Y;
+
+            // Normalize the normal vector
+            float norm = MathF.Sqrt(Nx * Nx + Ny * Ny);
+            Nx /= norm;
+            Ny /= norm;
+
+            // Velocity vector
+            float dotProduct = velocity.X * Nx + velocity.Y * Ny;
+
+            // Reflected velocity
+            float Vnew_x = velocity.X - 2 * dotProduct * Nx;
+            float Vnew_y = velocity.Y - 2 * dotProduct * Ny;
+
+            return new Vector2(Vnew_x, Vnew_y);
         }
     }
 }

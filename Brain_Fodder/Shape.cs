@@ -16,10 +16,13 @@ namespace Brain_Fodder
     }
     public class Circle : Shape
     {
+        private float radius;
         public Circle(Vector2 center, float radius)
         {
             base.Transformation = new Transformation2D(center, 0f, new Vector2(radius));
+            this.radius= radius;
         }
+        public float Radius { get => radius; set => radius = value; }
     }
 
     public class Ring : Circle

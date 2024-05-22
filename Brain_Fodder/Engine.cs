@@ -6,7 +6,7 @@ namespace Brain_Fodder
 {
     internal class Engine
     {
-
+        SoundManager soundManager;
         WindowHandler windowHandler;
         MasterRenderer masterRenderer;
         EntityManager entityManager;
@@ -17,6 +17,7 @@ namespace Brain_Fodder
             windowHandler = new WindowHandler(new Vector2i(1080, 1920) / 2);
             masterRenderer = new MasterRenderer();
             entityManager = new EntityManager();
+            soundManager = new SoundManager();
 
             WindowHandler.getWindow().UpdateFrame += delegate (FrameEventArgs eventArgs)
             {

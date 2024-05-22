@@ -10,7 +10,7 @@ uniform float width;
 void main(void){
 	float dist = distance(gl_FragCoord.xy, center);
 	if (dist <= radius && dist > radius-width) {
-		out_Colour.rgb = color;
+		out_Colour = vec4(color, 1.0f);
 	} else {
 		discard;
 	}
