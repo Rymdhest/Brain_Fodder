@@ -2,7 +2,7 @@
 
 namespace Brain_Fodder
 {
-    public abstract class Shape
+    public abstract class Shape 
     {
         private Transformation2D transformation;
         private Vector3 color;
@@ -30,12 +30,13 @@ namespace Brain_Fodder
         private float width;
         public Ring(Vector2 center, float radius, float width) : base(center, radius)
         {
+            base.Transformation.scale += new Vector2(width/2f);
             this.Width = width;
         }
 
         public float getInnerRadius()
         {
-            return base.Transformation.scale.X - width;
+            return base.Radius - width/2.0f;
         }
 
         public float Width { get => width; set => width = value; }

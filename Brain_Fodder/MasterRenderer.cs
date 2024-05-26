@@ -49,10 +49,11 @@ namespace SpaceEngine.RenderEngine
             int[] indicesLine = { 0, 1, 2, 3, 0, 2 };
             lineBase = glLoader.loadToVAO(positionsLine, indicesLine);
 
-            border = new Ring(WindowHandler.getCenter(), WindowHandler.getResolution().X / 2f, 1.0f);
+            float width = 90;
+            border = new Ring(WindowHandler.getCenter(), WindowHandler.getResolution().X / 2f-width/2.0f, width);
             rings.Add(border);
-            int numballs = 11;
-            float fill = .5f;
+            int numballs = 15;
+            float fill = .7f;
             for(int i = 0; i<numballs; i++)
             {
                 float spawnLength = border.getInnerRadius()*2f*fill;
@@ -61,7 +62,7 @@ namespace SpaceEngine.RenderEngine
                 float x =spawnStartX+ percent*spawnLength;
                 Vector2 spawn = WindowHandler.getCenter() + new Vector2(x, 0);
 
-                float r = 0.0f;
+                float r = 0.1f;
                 float g = MathF.Abs(percent-0.5f)*2f;
                 float b = 1.0f-MathF.Abs(percent - 0.5f)*2f;
                 
@@ -71,12 +72,12 @@ namespace SpaceEngine.RenderEngine
 
         private void addBall(Vector2 spawnPos, Vector3 color)
         {
-            float speed = 100;
+            float speed = 150;
             //Vector2 spawnPos = WindowHandler.getCenter() + MyMath.rng2DMinusPlus()*0;
             //spawnPos.X += MyMath.rngMinusPlus() * 100;
             Vector2 velocity = new Vector2(speed * MyMath.rngMinusPlus(), speed * MyMath.rngMinusPlus());
             velocity = new Vector2(0, speed);
-            BouncyBall ball = new BouncyBall(spawnPos, velocity, 8);
+            BouncyBall ball = new BouncyBall(spawnPos, velocity, 50);
 
             ball.Model.Color = color;
 
@@ -124,7 +125,7 @@ namespace SpaceEngine.RenderEngine
                 RingShader.loadUniformMatrix4f("uProjection", projection);
                 RingShader.loadUniformVector2f("center", ring.Transformation.position);
                 RingShader.loadUniformVector3f("color", ring.Color);
-                RingShader.loadUniformFloat("radius", ring.Transformation.scale.X);
+                RingShader.loadUniformFloat("radius", ring.Radius);
                 RingShader.loadUniformFloat("width", ring.Width);
                 RingShader.loadUniformMatrix4f("modelMatrix", MyMath.createTransformationMatrix(ring.Transformation));
 
@@ -182,6 +183,7 @@ namespace SpaceEngine.RenderEngine
                 {
                     ball.Velocity = ReflectCircleCollision(ball.Velocity, ball.Model.Transformation.position, border.Transformation.position);
                     ball.Velocity *= 1.05f;
+                    SoundManager.Play(ball.Velocity.Length*0.001f);
                 }
             }
         }
