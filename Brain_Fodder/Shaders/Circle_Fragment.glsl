@@ -8,11 +8,15 @@ uniform float radius;
 
 void main(void){
 	float dist = distance(gl_FragCoord.xy, center);
-	if (dist <= radius) {
-		out_Colour.rgb = color;
-		out_Colour.a = smoothstep(radius, 0, dist);
-		out_Colour.a *= 1.0f;
-	} else {
+	float smoothRadius =radius*0.8f;
+	if (dist >= smoothRadius) {
+		float alpha = smoothstep(radius, smoothRadius, dist);
+		out_Colour = vec4(color, alpha);
+	}
+	else if (dist <= radius) {
+		out_Colour = vec4(color, 1.0f);
+	}
+	else {
 		//out_Colour.rgb = vec3(0.0f, 1.0f, 0.0f);
 		discard;
 	}

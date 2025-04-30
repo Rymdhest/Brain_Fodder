@@ -31,7 +31,7 @@ namespace SpaceEngine.RenderEngine
             nws.AutoLoadBindings = true;
             nws.Title = title;
             nws.ClientSize = resolution;
-            nws.Location = new Vector2i(20, 100);
+            nws.Location = new Vector2i(200, 20);
 
             gws.UpdateFrequency = 60;
 
@@ -65,7 +65,7 @@ namespace SpaceEngine.RenderEngine
             {
                 framesLastSecondUpdate = framesCurrentSecondUpate;
                 framesCurrentSecondUpate = 0;
-                gameWindow.Title = title + " " + framesLastSecondUpdate + " FPS Update : "+ framesLastSecondRender+" FPS";
+                //gameWindow.Title = title + " " + framesLastSecondUpdate + " FPS Update : "+ framesLastSecondRender+" FPS";
                 secondStopWatchUpdate.Restart();
 
             }

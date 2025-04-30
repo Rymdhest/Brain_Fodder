@@ -18,6 +18,8 @@ namespace Brain_Fodder
             masterRenderer = new MasterRenderer();
             entityManager = new EntityManager();
             soundManager = new SoundManager();
+            SoundManager.Play(1);
+            SoundManager.Pause();
 
             WindowHandler.getWindow().UpdateFrame += delegate (FrameEventArgs eventArgs)
             {
@@ -32,6 +34,13 @@ namespace Brain_Fodder
                 windowHandler.onResize(eventArgs);
                 masterRenderer.onResize(eventArgs);
             };
+            WindowHandler.getWindow().KeyUp += delegate (KeyboardKeyEventArgs eventArgs)
+            {
+                if (eventArgs.Key == OpenTK.Windowing.GraphicsLibraryFramework.Keys.R)
+                {
+                    masterRenderer.respawn();
+                }
+            };
         }
 
         public void run()
@@ -44,6 +53,7 @@ namespace Brain_Fodder
             windowHandler.update(delta);
             entityManager.update(delta);
             masterRenderer.update(delta);
+            SoundManager.update(delta);
         }
         private void render()
         {

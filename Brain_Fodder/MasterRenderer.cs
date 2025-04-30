@@ -24,6 +24,8 @@ namespace SpaceEngine.RenderEngine
 
         private List<BouncyBall> balls = new List<BouncyBall>();
 
+        private BouncyBall lineBall;
+
         private Ring border;
 
         class BouncyBall{
@@ -48,41 +50,61 @@ namespace SpaceEngine.RenderEngine
             float[] positionsLine = { 0, 0.5f, 0, -0.5f, 1, -0.5f, 1, 0.5f };
             int[] indicesLine = { 0, 1, 2, 3, 0, 2 };
             lineBase = glLoader.loadToVAO(positionsLine, indicesLine);
+            
+            respawn();
+        }
 
-            float width = 90;
-            border = new Ring(WindowHandler.getCenter(), WindowHandler.getResolution().X / 2f-width/2.0f, width);
+        public void respawn()
+        {
+            balls.Clear();
+
+            lines.Clear();
+            rings.Clear();
+            circles.Clear();
+
+            SoundManager.Resume();
+            SoundManager.Resume();
+            SoundManager.Pause();
+
+            float width = 9;
+            border = new Ring(WindowHandler.getCenter(), WindowHandler.getResolution().X / 2f - width / 2.0f, width);
             rings.Add(border);
-            int numballs = 15;
+            int numballs = 1;
             float fill = .7f;
-            for(int i = 0; i<numballs; i++)
+            for (int i = 0; i < numballs; i++)
             {
-                float spawnLength = border.getInnerRadius()*2f*fill;
-                float spawnStartX = -border.getInnerRadius()*fill;
-                float percent = i/(float)(numballs-1);
-                float x =spawnStartX+ percent*spawnLength;
-                Vector2 spawn = WindowHandler.getCenter() + new Vector2(x, 0);
+                float spawnLength = border.getInnerRadius() * 2f * fill;
+                float spawnStartX = -border.getInnerRadius() * fill;
 
+                float percent = 0.5f;
+                if (numballs > 1) percent = i / (float)(numballs - 1);
+                float x = spawnStartX + percent * spawnLength;
+                Vector2 spawn = WindowHandler.getCenter() + new Vector2(x, 0);
+                spawn = WindowHandler.getCenter() + MyMath.rng2DMinusPlus() * border.Radius * 0.5f;
                 float r = 0.1f;
-                float g = MathF.Abs(percent-0.5f)*2f;
-                float b = 1.0f-MathF.Abs(percent - 0.5f)*2f;
-                
+                float g = MathF.Abs(percent - 0.5f) * 2f;
+                float b = 1.0f - MathF.Abs(percent - 0.5f) * 2f;
+
                 addBall(spawn, new Vector3(r, g, b));
             }
         }
 
         private void addBall(Vector2 spawnPos, Vector3 color)
         {
-            float speed = 150;
+            float speed = 200;
             //Vector2 spawnPos = WindowHandler.getCenter() + MyMath.rng2DMinusPlus()*0;
             //spawnPos.X += MyMath.rngMinusPlus() * 100;
-            Vector2 velocity = new Vector2(speed * MyMath.rngMinusPlus(), speed * MyMath.rngMinusPlus());
-            velocity = new Vector2(0, speed);
-            BouncyBall ball = new BouncyBall(spawnPos, velocity, 50);
+            Vector2 velocity = new Vector2(MyMath.rngMinusPlus(), MyMath.rngMinusPlus());
+            velocity = velocity.Normalized()*speed;
+            //velocity = new Vector2(0, speed);
+            BouncyBall ball = new BouncyBall(spawnPos, velocity, 19);
 
             ball.Model.Color = color;
+            ball.Model.Color = MyMath.rng3D().Normalized();
 
             balls.Add(ball);
             circles.Add(ball.Model);
+            this.lineBall = ball;
         }
 
         public void prepareFrame()
@@ -93,7 +115,7 @@ namespace SpaceEngine.RenderEngine
             GL.Enable(EnableCap.CullFace);
             GL.CullFace(CullFaceMode.Back);
             GL.Enable(EnableCap.Blend);
-            GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.One);
+            GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
             GL.ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
         }
@@ -110,9 +132,9 @@ namespace SpaceEngine.RenderEngine
             float width = 10.0f;
             prepareFrame();
 
+            renderLines();
             renderRings();
             rendercircles();
-            renderLines();
 
             finishFrame();
         }
@@ -179,12 +201,30 @@ namespace SpaceEngine.RenderEngine
             {
                 ball.Model.Transformation.position += ball.Velocity * delta;
 
-                if (Vector2.Distance( ball.Model.Transformation.position, border.Transformation.position)+ball.Model.Radius > border.getInnerRadius())
+                if (Vector2.Distance( ball.Model.Transformation.position, border.Transformation.position)+ball.Model.Radius*0.8f > border.getInnerRadius())
                 {
+                    float angle = MyMath.AngleBetween(ball.Model.Transformation.position, border.Transformation.position);
+                    float x = MathF.Cos(angle)*-1f;
+                    float y = MathF.Sin(angle)*-1f;
+                    Vector2 collisionPoint = border.Transformation.position + new Vector2(x, y)*border.Radius;
                     ball.Velocity = ReflectCircleCollision(ball.Velocity, ball.Model.Transformation.position, border.Transformation.position);
-                    ball.Velocity *= 1.05f;
-                    SoundManager.Play(ball.Velocity.Length*0.001f);
+                    ball.Velocity *= 1.06f;
+                    //SoundManager.Play(MathF.Sqrt( ball.Velocity.Length)*0.02f);
+                    SoundManager.pump();
+                    Line line = new Line(collisionPoint, ball.Model.Transformation.position,3.0f);
+                    line.Color = ball.Model.Color;
+
+                    float diameter = border.Radius * 2f;
+                    float r = 0f;
+                    float g = (collisionPoint.Y - border.Transformation.position.Y) / diameter + 0.5f;
+                    float b = (collisionPoint.X - border.Transformation.position.X) / diameter + 0.5f;
+                    line.Color = new Vector3(r, g, b);
+                    lines.Add(line);
                 }
+            }
+            foreach(Line line in lines)
+            {
+                line.setEnd(lineBall.Model.Transformation.position);
             }
         }
         public void onResize(ResizeEventArgs eventArgs)

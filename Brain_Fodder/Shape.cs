@@ -1,4 +1,5 @@
 ﻿using OpenTK.Mathematics;
+using SpaceEngine.Util;
 
 namespace Brain_Fodder
 {
@@ -58,7 +59,7 @@ namespace Brain_Fodder
 
         private void updateTransformation()
         {
-            float angle = MathF.Atan2(end.Y - start.Y, end.X - start.X);
+            float angle = MyMath.AngleBetween(start, end);
             float length = Vector2.Distance(start, end);
             base.Transformation = new Transformation2D(start, angle, new Vector2(length, width));
         }

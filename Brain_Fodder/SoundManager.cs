@@ -1,27 +1,29 @@
-﻿
-using OpenTK.Audio.OpenAL;
+﻿using OpenTK.Audio.OpenAL;
 using System.Runtime.InteropServices;
 
 class SoundManager
 {
-    static readonly string filename1 = "click.wav";
+    static readonly string filename1 = "chipi.wav";
+    private static int sourceId;
+    private static int bufferId;
+    private static IntPtr unmanagedPointer;
+    private static float remaining = 0;
+    private static bool playing = false;
+
     public SoundManager()
     {
         List<string> list = ALC.GetString(AlcGetStringList.AllDevicesSpecifier);
         list.ForEach(f => { Console.WriteLine(f); });
 
         ALDevice device = ALC.OpenDevice(null);
-        //ALDevice device = ALC.OpenDevice("Generic Software on HP P27h G4(NVIDIA High Definition Audio)");
-
         ALContext context = ALC.CreateContext(device, new ALContextAttributes());
         ALC.MakeContextCurrent(context);
     }
 
-    public static async void Play(float pitch = 1.0f)
+    public static void Play(float pitch = 1.0f)
     {
-        int bufferId = AL.GenBuffer();
-        int sourceId = AL.GenSource();
-        int state;
+        bufferId = AL.GenBuffer();
+        sourceId = AL.GenSource();
 
         int channels, bits_per_sample, sample_rate;
 
@@ -34,10 +36,8 @@ class SoundManager
 
         sound_data = sound_data.Take(sound_data.Length - (4 * 5000)).ToArray();
 
-        IntPtr unmanagedPointer = Marshal.AllocHGlobal(sound_data.Length);
+        unmanagedPointer = Marshal.AllocHGlobal(sound_data.Length);
         Marshal.Copy(sound_data, 0, unmanagedPointer, sound_data.Length);
-
-        Console.WriteLine(AL.GetError());
 
         int bufferSize = sound_data.Length - sound_data.Length % 4;
 
@@ -49,23 +49,18 @@ class SoundManager
             sample_rate
         );
 
-        Console.WriteLine(AL.GetError()); // no error
-
         AL.Source(sourceId, ALSourcei.Buffer, bufferId);
 
         // Set the pitch
         AL.Source(sourceId, ALSourcef.Pitch, pitch);
 
         AL.SourcePlay(sourceId);
+        playing = true;
+        Console.WriteLine($"Playing[{sourceId}][{bufferId}]({filename1}) with pitch {pitch}");
 
-        Console.WriteLine(string.Format("Playing[{0}][{1}]({2}) with pitch {3}",
-                            sourceId,
-                            bufferId,
-                            filename1,
-                            pitch));
-
-        await Task.Run(() =>
+        Task.Run(() =>
         {
+            int state;
             do
             {
                 Thread.Sleep(250);
@@ -75,21 +70,69 @@ class SoundManager
             while ((ALSourceState)state == ALSourceState.Playing);
 
             Console.WriteLine("Playing end : " + sourceId);
-
+            /*
             AL.SourceStop(sourceId);
             AL.DeleteSource(sourceId);
             AL.DeleteBuffer(sourceId);
 
             Marshal.FreeHGlobal(unmanagedPointer);
+            */
         });
     }
 
+    public static void update(float delta)
+    {
+        if (remaining > 0)
+        {
+            remaining -= delta;
+            if (remaining < 0)
+            {
+                remaining = 0;
+                SoundManager.Pause();
+            }
+        }
+    }
+
+    public static void pump()
+    {
+        remaining = 1f/3f;
+        if (!playing)
+        {
+            Resume();
+        }
+    }
+
+    public static void Pause()
+    {
+        AL.GetSource(sourceId, ALGetSourcei.SourceState, out int state);
+
+        if ((ALSourceState)state == ALSourceState.Playing)
+        {
+            AL.SourcePause(sourceId);
+            Console.WriteLine($"Paused[{sourceId}] to state {(ALSourceState)state}");
+            playing = false;
+        }
+        else
+        {
+            Console.WriteLine($"Cannot pause, current state is {(ALSourceState)state}");
+        }
+    }
+
+    public static void Resume()
+    {
+        AL.GetSource(sourceId, ALGetSourcei.SourceState, out int state);
+
+        AL.SourcePlay(sourceId);
+        playing = true;
+        Console.WriteLine($"Resumed[{sourceId}]");
+
+    }
 
     public static byte[] LoadWave(
-     Stream stream
-     , out int channels
-     , out int bits
-     , out int rate)
+     Stream stream,
+     out int channels,
+     out int bits,
+     out int rate)
     {
         if (stream == null)
             throw new ArgumentNullException("stream");
@@ -121,9 +164,6 @@ class SoundManager
             int bits_per_sample = reader.ReadInt16();
 
             string data_signature = new string(reader.ReadChars(4));
-           // if (data_signature != "data")
-           //     throw new NotSupportedException("Specified wave file is not supported.");
-
             int data_chunk_size = reader.ReadInt32();
 
             channels = num_channels;
@@ -152,6 +192,7 @@ class SoundManager
         bits = 16; // 16-bit audio
         return buffer;
     }
+
     public static ALFormat GetSoundFormat(int channels, int bits)
     {
         switch (channels)

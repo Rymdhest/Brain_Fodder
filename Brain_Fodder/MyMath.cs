@@ -77,6 +77,12 @@ namespace SpaceEngine.Util
             matrix = matrix * Matrix4.CreateRotationX(rotation.X);
             return matrix;
         }
+
+        public static float AngleBetween(Vector2 p1, Vector2 p2)
+        {
+            return MathF.Atan2(p2.Y - p1.Y, p2.X - p1.X);
+        }
+
         public static float clamp(float number, float min, float max)
         {
             if (number < min) return min;
