@@ -1,205 +1,92 @@
-﻿using OpenTK.Audio.OpenAL;
+﻿using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
+using OpenTK.Audio.OpenAL;
+using SpaceEngine.Util;
 using System.Runtime.InteropServices;
 
 class SoundManager
 {
-    static readonly string filename1 = "chipi.wav";
-    private static int sourceId;
-    private static int bufferId;
-    private static IntPtr unmanagedPointer;
-    private static float remaining = 0;
-    private static bool playing = false;
+    private static List<short> recordingBuffer = new List<short>();
+    public static bool IsRecording = false;
+
+    private static WaveOutEvent outputDevice = new WaveOutEvent();
+    private static NAudio.Wave.SampleProviders.MixingSampleProvider mixer;
 
     public SoundManager()
     {
-        List<string> list = ALC.GetString(AlcGetStringList.AllDevicesSpecifier);
-        list.ForEach(f => { Console.WriteLine(f); });
-
-        ALDevice device = ALC.OpenDevice(null);
-        ALContext context = ALC.CreateContext(device, new ALContextAttributes());
-        ALC.MakeContextCurrent(context);
+        var format = WaveFormat.CreateIeeeFloatWaveFormat(44100, 1);
+        mixer = new NAudio.Wave.SampleProviders.MixingSampleProvider(format)
+        {
+            ReadFully = true // Keeps the mixer playing even when no sounds are active
+        };
+        outputDevice.Init(mixer);
+        outputDevice.Play();
     }
 
-    public static void Play(float pitch = 1.0f)
+    public static void Play(short[] soundData)
     {
-        bufferId = AL.GenBuffer();
-        sourceId = AL.GenSource();
+        var ms = new MemoryStream();
+        var writer = new BinaryWriter(ms);
 
-        int channels, bits_per_sample, sample_rate;
-
-        byte[] sound_data = LoadWave(
-            File.Open(filename1, FileMode.Open),
-            out channels,
-            out bits_per_sample,
-            out sample_rate
-        );
-
-        sound_data = sound_data.Take(sound_data.Length - (4 * 5000)).ToArray();
-
-        unmanagedPointer = Marshal.AllocHGlobal(sound_data.Length);
-        Marshal.Copy(sound_data, 0, unmanagedPointer, sound_data.Length);
-
-        int bufferSize = sound_data.Length - sound_data.Length % 4;
-
-        AL.BufferData(
-            bufferId,
-            GetSoundFormat(channels, bits_per_sample),
-            unmanagedPointer,
-            bufferSize,
-            sample_rate
-        );
-
-        AL.Source(sourceId, ALSourcei.Buffer, bufferId);
-
-        // Set the pitch
-        AL.Source(sourceId, ALSourcef.Pitch, pitch);
-
-        AL.SourcePlay(sourceId);
-        playing = true;
-        Console.WriteLine($"Playing[{sourceId}][{bufferId}]({filename1}) with pitch {pitch}");
-
-        Task.Run(() =>
+        foreach (var sample in soundData)
         {
-            int state;
-            do
-            {
-                Thread.Sleep(250);
-                Console.Write(".");
-                AL.GetSource(sourceId, ALGetSourcei.SourceState, out state);
-            }
-            while ((ALSourceState)state == ALSourceState.Playing);
+            writer.Write(sample);
+        }
 
-            Console.WriteLine("Playing end : " + sourceId);
-            /*
-            AL.SourceStop(sourceId);
-            AL.DeleteSource(sourceId);
-            AL.DeleteBuffer(sourceId);
+        ms.Position = 0;
 
-            Marshal.FreeHGlobal(unmanagedPointer);
-            */
-        });
+        // 2. Create the raw stream (16-bit Mono)
+        var rawStream = new RawSourceWaveStream(ms, new WaveFormat(44100, 16, 1));
+
+        // 3. Convert the 16-bit integer stream into a 32-bit Float stream
+        var floatStream = new Wave16ToFloatProvider(rawStream);
+
+        // 4. Push the float stream directly into the mixer!
+        mixer.AddMixerInput(floatStream);
+
+        // 5. Save it to our export buffer for the final 30-sec video
+        if (IsRecording)
+        {
+            recordingBuffer.AddRange(soundData);
+        }
     }
 
     public static void update(float delta)
     {
-        if (remaining > 0)
-        {
-            remaining -= delta;
-            if (remaining < 0)
-            {
-                remaining = 0;
-                SoundManager.Pause();
-            }
-        }
     }
 
-    public static void pump()
+
+    public static short[] GenerateLaser()
     {
-        remaining = 1f/3f;
-        if (!playing)
+        int sampleRate = 44100;
+        double duration = 1.0; // 0.3 seconds long
+        int totalSamples = (int)(sampleRate * duration);
+        short[] audioData = new short[totalSamples];
+
+        double volume = 1.0;
+        double freq = 0;
+        float rand = MyMath.rng();
+        if (rand > 0.8) freq = 261.63;
+        else if (rand > 0.6) freq = 329.63;
+        else if (rand > 0.4) freq = 392.0;
+        else if (rand > 0.2) freq = 440.0;
+        freq *= 1.0;
+        double wave = 0;
+        for (int i = 0; i < totalSamples; i++)
         {
-            Resume();
+            double progress = (double)i / totalSamples;
+            double time = (double)i / sampleRate;
+
+            wave += 1.0 * Math.Sin(Math.Tau * freq * 1 * time);
+            wave += 0.8 * Math.Sin(Math.Tau * freq * 2 * time);
+            wave += 0.6 * Math.Sin(Math.Tau * freq * 3 * time);
+            wave += 0.4 * Math.Sin(Math.Tau * freq * 6 * time);
+
+            wave /= 2.8; 
+
+            double envelope = Math.Exp(-4.0 * progress);
+            audioData[i] = (short)(wave * short.MaxValue * volume * envelope);
         }
-    }
-
-    public static void Pause()
-    {
-        AL.GetSource(sourceId, ALGetSourcei.SourceState, out int state);
-
-        if ((ALSourceState)state == ALSourceState.Playing)
-        {
-            AL.SourcePause(sourceId);
-            Console.WriteLine($"Paused[{sourceId}] to state {(ALSourceState)state}");
-            playing = false;
-        }
-        else
-        {
-            Console.WriteLine($"Cannot pause, current state is {(ALSourceState)state}");
-        }
-    }
-
-    public static void Resume()
-    {
-        AL.GetSource(sourceId, ALGetSourcei.SourceState, out int state);
-
-        AL.SourcePlay(sourceId);
-        playing = true;
-        Console.WriteLine($"Resumed[{sourceId}]");
-
-    }
-
-    public static byte[] LoadWave(
-     Stream stream,
-     out int channels,
-     out int bits,
-     out int rate)
-    {
-        if (stream == null)
-            throw new ArgumentNullException("stream");
-
-        using (BinaryReader reader = new BinaryReader(stream))
-        {
-            // RIFF header
-            string signature = new string(reader.ReadChars(4));
-            if (signature != "RIFF")
-                throw new NotSupportedException("Specified stream is not a wave file.");
-
-            int riff_chunck_size = reader.ReadInt32();
-
-            string format = new string(reader.ReadChars(4));
-            if (format != "WAVE")
-                throw new NotSupportedException("Specified stream is not a wave file.");
-
-            // WAVE header
-            string format_signature = new string(reader.ReadChars(4));
-            if (format_signature != "fmt ")
-                throw new NotSupportedException("Specified wave file is not supported.");
-
-            int format_chunk_size = reader.ReadInt32();
-            int audio_format = reader.ReadInt16();
-            int num_channels = reader.ReadInt16();
-            int sample_rate = reader.ReadInt32();
-            int byte_rate = reader.ReadInt32();
-            int block_align = reader.ReadInt16();
-            int bits_per_sample = reader.ReadInt16();
-
-            string data_signature = new string(reader.ReadChars(4));
-            int data_chunk_size = reader.ReadInt32();
-
-            channels = num_channels;
-            bits = bits_per_sample;
-            rate = sample_rate;
-
-            return reader.ReadBytes((int)reader.BaseStream.Length);
-        }
-    }
-
-    public static byte[] GenerateSineWave(int sampleRate, double frequency, double duration, out int channels, out int bits)
-    {
-        int samples = (int)(sampleRate * duration);
-        byte[] buffer = new byte[samples * 2]; // 2 bytes per sample for 16-bit audio
-        short amplitude = 32760; // Max amplitude for 16-bit audio
-        double theta = frequency * 2 * Math.PI / sampleRate;
-
-        for (int i = 0; i < samples; i++)
-        {
-            short sample = (short)(amplitude * Math.Sin(theta * i));
-            buffer[2 * i] = (byte)(sample & 0xFF);
-            buffer[2 * i + 1] = (byte)((sample >> 8) & 0xFF);
-        }
-
-        channels = 1; // Mono
-        bits = 16; // 16-bit audio
-        return buffer;
-    }
-
-    public static ALFormat GetSoundFormat(int channels, int bits)
-    {
-        switch (channels)
-        {
-            case 1: return bits == 8 ? ALFormat.Mono8 : ALFormat.Mono16;
-            case 2: return bits == 8 ? ALFormat.Stereo8 : ALFormat.Stereo16;
-            default: throw new NotSupportedException("The specified sound format is not supported.");
-        }
+        return audioData;
     }
 }

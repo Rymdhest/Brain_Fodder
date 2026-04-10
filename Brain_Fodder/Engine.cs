@@ -18,8 +18,6 @@ namespace Brain_Fodder
             masterRenderer = new MasterRenderer();
             entityManager = new EntityManager();
             soundManager = new SoundManager();
-            SoundManager.Play(1);
-            SoundManager.Pause();
 
             WindowHandler.getWindow().UpdateFrame += delegate (FrameEventArgs eventArgs)
             {

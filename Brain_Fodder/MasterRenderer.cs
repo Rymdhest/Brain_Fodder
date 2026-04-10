@@ -62,9 +62,6 @@ namespace SpaceEngine.RenderEngine
             rings.Clear();
             circles.Clear();
 
-            SoundManager.Resume();
-            SoundManager.Resume();
-            SoundManager.Pause();
 
             float width = 9;
             border = new Ring(WindowHandler.getCenter(), WindowHandler.getResolution().X / 2f - width / 2.0f, width);
@@ -210,7 +207,7 @@ namespace SpaceEngine.RenderEngine
                     ball.Velocity = ReflectCircleCollision(ball.Velocity, ball.Model.Transformation.position, border.Transformation.position);
                     ball.Velocity *= 1.06f;
                     //SoundManager.Play(MathF.Sqrt( ball.Velocity.Length)*0.02f);
-                    SoundManager.pump();
+                    SoundManager.Play(SoundManager.GenerateLaser());
                     Line line = new Line(collisionPoint, ball.Model.Transformation.position,3.0f);
                     line.Color = ball.Model.Color;
 
