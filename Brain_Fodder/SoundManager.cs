@@ -12,6 +12,7 @@ class SoundManager
     private static WaveOutEvent outputDevice = new WaveOutEvent();
     private static NAudio.Wave.SampleProviders.MixingSampleProvider mixer;
 
+    private static int count = 50;
     public SoundManager()
     {
         var format = WaveFormat.CreateIeeeFloatWaveFormat(44100, 1);
@@ -54,39 +55,62 @@ class SoundManager
     public static void update(float delta)
     {
     }
+    public static double GetFrequency(int midiNote)
+    {
+        // 69 is the MIDI note for A4 (440Hz)
+        // The formula: f = 440 * 2^((n-69)/12)
+        return 440.0 * Math.Pow(2.0, (midiNote - 69) / 12.0);
+    }
 
 
-    public static short[] GenerateLaser()
+    public static short[] GenerateSound()
     {
         int sampleRate = 44100;
-        double duration = 1.0; // 0.3 seconds long
+        double duration = 1.0;
         int totalSamples = (int)(sampleRate * duration);
         short[] audioData = new short[totalSamples];
 
-        double volume = 1.0;
-        double freq = 0;
-        float rand = MyMath.rng();
-        if (rand > 0.8) freq = 261.63;
-        else if (rand > 0.6) freq = 329.63;
-        else if (rand > 0.4) freq = 392.0;
-        else if (rand > 0.2) freq = 440.0;
-        freq *= 1.0;
-        double wave = 0;
+        // Pick a note
+        //int[] scale = { 60, 62, 64, 65, 67, 69, 71 };
+        int[] scale = { 60, 62, 63, 65, 67, 68, 70 };
+
+        //double freq = GetFrequency(scale[new Random().Next(scale.Length)]);
+        double freq = GetFrequency(count);
+        count++;
+        freq /= 2.0;
+
+        // Pre-calculate phase steps for efficiency
+        double phaseStep = Math.Tau * freq / sampleRate;
+        double phase = 0;
+
         for (int i = 0; i < totalSamples; i++)
         {
-            double progress = (double)i / totalSamples;
             double time = (double)i / sampleRate;
 
-            wave += 1.0 * Math.Sin(Math.Tau * freq * 1 * time);
-            wave += 0.8 * Math.Sin(Math.Tau * freq * 2 * time);
-            wave += 0.6 * Math.Sin(Math.Tau * freq * 3 * time);
-            wave += 0.4 * Math.Sin(Math.Tau * freq * 6 * time);
+            // 1. Advance the fundamental phase
+            phase += phaseStep;
 
-            wave /= 2.8; 
+            // 2. Additive Synthesis with Harmonic-Specific Decay
+            double sampleValue = 0;
+            // Fundamental
+            sampleValue += 1.0 * Math.Sin(phase) * Math.Exp(-2.0 * time);
+            // 2nd Harmonic (Octave) - Decays faster
+            sampleValue += 0.5 * Math.Sin(phase * 2.0) * Math.Exp(-4.0 * time);
+            // 3rd Harmonic - Decays even faster
+            sampleValue += 0.2 * Math.Sin(phase * 3.01) * Math.Exp(-6.0 * time);
 
-            double envelope = Math.Exp(-4.0 * progress);
-            audioData[i] = (short)(wave * short.MaxValue * volume * envelope);
+            // 10ms Fade In
+            double attack = Math.Min(1.0, time / 0.01);
+            // 50ms Fade Out
+            double release = Math.Min(1.0, (duration - time) / 0.05);
+
+            // Apply both
+            double finalEnvelope = attack * release * Math.Exp(-3.0 * time);
+
+            double output = sampleValue * finalEnvelope * 0.5;
+            audioData[i] = (short)(Math.Clamp(output, -1.0, 1.0) * short.MaxValue);
         }
+        Console.WriteLine("Generated sound with frequency: " + freq + " Hz");
         return audioData;
     }
 }

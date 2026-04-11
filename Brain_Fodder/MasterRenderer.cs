@@ -207,7 +207,7 @@ namespace SpaceEngine.RenderEngine
                     ball.Velocity = ReflectCircleCollision(ball.Velocity, ball.Model.Transformation.position, border.Transformation.position);
                     ball.Velocity *= 1.06f;
                     //SoundManager.Play(MathF.Sqrt( ball.Velocity.Length)*0.02f);
-                    SoundManager.Play(SoundManager.GenerateLaser());
+                    SoundManager.Play(SoundManager.GenerateSound());
                     Line line = new Line(collisionPoint, ball.Model.Transformation.position,3.0f);
                     line.Color = ball.Model.Color;
 
