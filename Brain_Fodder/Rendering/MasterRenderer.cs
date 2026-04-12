@@ -1,14 +1,23 @@
 ﻿
-using OpenTK.Mathematics;
-using OpenTK.Graphics.OpenGL;
-using OpenTK.Windowing.Common;
 using Brain_Fodder;
-using SpaceEngine.Modelling;
+using OpenTK.Graphics.OpenGL;
+using OpenTK.Mathematics;
+using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
+using SpaceEngine.Modelling;
+using SpaceEngine.RenderEngine;
 using SpaceEngine.Util;
+using System.Net.NetworkInformation;
 
-namespace SpaceEngine.RenderEngine
+namespace Brain_Fodder.Rendering
 {
+    public struct CircleRenderCommand
+    {
+        public Vector2 position;
+        public float radius;
+        public Vector3 color;
+    }
+
     internal class MasterRenderer
     {
         public static ShaderProgram simpleShader = new ShaderProgram("Simple_Vertex", "Simple_Fragment");
@@ -18,7 +27,7 @@ namespace SpaceEngine.RenderEngine
         private glModel lineBase;
         private Matrix4 projection;
 
-        private List<Circle> circles = new List<Circle>();
+        public static List<CircleRenderCommand> circles = new List<CircleRenderCommand>();
         private List<Line> lines = new List<Line>();
         private List<Ring> rings = new List<Ring>();
 
@@ -51,58 +60,9 @@ namespace SpaceEngine.RenderEngine
             int[] indicesLine = { 0, 1, 2, 3, 0, 2 };
             lineBase = glLoader.loadToVAO(positionsLine, indicesLine);
             
-            respawn();
         }
 
-        public void respawn()
-        {
-            balls.Clear();
 
-            lines.Clear();
-            rings.Clear();
-            circles.Clear();
-
-
-            float width = 9;
-            border = new Ring(WindowHandler.getCenter(), WindowHandler.getResolution().X / 2f - width / 2.0f, width);
-            rings.Add(border);
-            int numballs = 1;
-            float fill = .7f;
-            for (int i = 0; i < numballs; i++)
-            {
-                float spawnLength = border.getInnerRadius() * 2f * fill;
-                float spawnStartX = -border.getInnerRadius() * fill;
-
-                float percent = 0.5f;
-                if (numballs > 1) percent = i / (float)(numballs - 1);
-                float x = spawnStartX + percent * spawnLength;
-                Vector2 spawn = WindowHandler.getCenter() + new Vector2(x, 0);
-                spawn = WindowHandler.getCenter() + MyMath.rng2DMinusPlus() * border.Radius * 0.5f;
-                float r = 0.1f;
-                float g = MathF.Abs(percent - 0.5f) * 2f;
-                float b = 1.0f - MathF.Abs(percent - 0.5f) * 2f;
-
-                addBall(spawn, new Vector3(r, g, b));
-            }
-        }
-
-        private void addBall(Vector2 spawnPos, Vector3 color)
-        {
-            float speed = 200;
-            //Vector2 spawnPos = WindowHandler.getCenter() + MyMath.rng2DMinusPlus()*0;
-            //spawnPos.X += MyMath.rngMinusPlus() * 100;
-            Vector2 velocity = new Vector2(MyMath.rngMinusPlus(), MyMath.rngMinusPlus());
-            velocity = velocity.Normalized()*speed;
-            //velocity = new Vector2(0, speed);
-            BouncyBall ball = new BouncyBall(spawnPos, velocity, 19);
-
-            ball.Model.Color = color;
-            ball.Model.Color = MyMath.rng3D().Normalized();
-
-            balls.Add(ball);
-            circles.Add(ball.Model);
-            this.lineBall = ball;
-        }
 
         public void prepareFrame()
         {
@@ -113,7 +73,7 @@ namespace SpaceEngine.RenderEngine
             GL.CullFace(CullFaceMode.Back);
             GL.Enable(EnableCap.Blend);
             GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
-            GL.ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            GL.ClearColor(0.02f, 0.02f, 0.1f, 0.0f);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
         }
 
@@ -124,9 +84,6 @@ namespace SpaceEngine.RenderEngine
    
         public void render()
         {
-            Vector2 from = new Vector2(100, 100);
-            Vector2 to = new Vector2(200, 200);
-            float width = 10.0f;
             prepareFrame();
 
             renderLines();
@@ -159,13 +116,13 @@ namespace SpaceEngine.RenderEngine
         private void rendercircles()
         {
             circleShader.bind();
-            foreach (Circle circle in circles)
+            foreach (CircleRenderCommand circle in circles)
             {
                 circleShader.loadUniformMatrix4f("uProjection", projection);
-                circleShader.loadUniformVector2f("center", circle.Transformation.position);
-                circleShader.loadUniformVector3f("color", circle.Color);
-                circleShader.loadUniformFloat("radius", circle.Transformation.scale.X);
-                circleShader.loadUniformMatrix4f("modelMatrix", MyMath.createTransformationMatrix(circle.Transformation));
+                circleShader.loadUniformVector2f("center", circle.position);
+                circleShader.loadUniformVector3f("color", circle.color);
+                circleShader.loadUniformFloat("radius", circle.radius);
+                circleShader.loadUniformMatrix4f("modelMatrix", MyMath.createTransformationMatrix(circle.position, 0f, new Vector2(circle.radius)));
 
                 glModel glmodel = unitSquare;
                 GL.BindVertexArray(glmodel.getVAOID());
@@ -173,6 +130,7 @@ namespace SpaceEngine.RenderEngine
                 GL.DrawElements(PrimitiveType.Triangles, glmodel.getVertexCount(), DrawElementsType.UnsignedInt, 0);
             }
             circleShader.unBind();
+            circles.Clear();
         }
 
         private void renderLines()

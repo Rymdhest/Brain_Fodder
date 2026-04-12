@@ -6,12 +6,7 @@ using System.Threading.Tasks;
 
 namespace Brain_Fodder
 {
-    internal class EntityManager
+    internal class World
     {
-
-        public void update(float delta)
-        {
-
-        }
     }
 }

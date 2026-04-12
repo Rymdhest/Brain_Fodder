@@ -1,4 +1,6 @@
-﻿using OpenTK.Mathematics;
+﻿using Brain_Fodder.Rendering;
+using Dino_Engine.ECS.ECS_Architecture;
+using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using SpaceEngine.RenderEngine;
 
@@ -9,14 +11,18 @@ namespace Brain_Fodder
         SoundManager soundManager;
         WindowHandler windowHandler;
         MasterRenderer masterRenderer;
-        EntityManager entityManager;
+        ECSWorld ecsWorld;
         public static float EngineDeltaClock = 0f;
 
         public Engine()
         {
             windowHandler = new WindowHandler(new Vector2i(1080, 1920) / 2);
             masterRenderer = new MasterRenderer();
-            entityManager = new EntityManager();
+
+            ComponentTypeRegistry.AutoRegisterAllComponents();
+            SystemRegistry.AutoRegisterAllSystems();
+            ecsWorld = new ECSWorld();
+
             soundManager = new SoundManager();
 
             WindowHandler.getWindow().UpdateFrame += delegate (FrameEventArgs eventArgs)
@@ -36,7 +42,7 @@ namespace Brain_Fodder
             {
                 if (eventArgs.Key == OpenTK.Windowing.GraphicsLibraryFramework.Keys.R)
                 {
-                    masterRenderer.respawn();
+
                 }
             };
         }
@@ -49,7 +55,7 @@ namespace Brain_Fodder
         {
             EngineDeltaClock += delta;
             windowHandler.update(delta);
-            entityManager.update(delta);
+            ecsWorld.Update(delta);
             masterRenderer.update(delta);
             SoundManager.update(delta);
         }

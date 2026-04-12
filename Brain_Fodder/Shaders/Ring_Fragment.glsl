@@ -18,7 +18,7 @@ void main(void){
 	} else if (dist >= radius && dist <= radius+width/2.0f){
 		out_Colour = vec4(color, smoothstep(radius+width/2.0f,radius, dist));
 	} else {
-		discard;
-		//out_Colour = vec4(0,0,1.0, 1);
+		//discard;
+		out_Colour = vec4(0,0,1.0, 1);
 	}
 }

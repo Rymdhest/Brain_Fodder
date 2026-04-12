@@ -8,7 +8,7 @@ uniform float radius;
 
 void main(void){
 	float dist = distance(gl_FragCoord.xy, center);
-	float smoothRadius =radius*0.8f;
+	float smoothRadius =radius*0.9f;
 	if (dist >= smoothRadius) {
 		float alpha = smoothstep(radius, smoothRadius, dist);
 		out_Colour = vec4(color, alpha);
