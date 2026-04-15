@@ -1,4 +1,5 @@
 ﻿using Brain_Fodder.Rendering;
+using Dino_Engine.ECS.Components;
 using Dino_Engine.ECS.ECS_Architecture;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
@@ -23,6 +24,8 @@ namespace Brain_Fodder
             SystemRegistry.AutoRegisterAllSystems();
             ecsWorld = new ECSWorld();
 
+            ecsWorld.RegisterSingleton<CollisionBufferComponent>(ecsWorld.CreateEntity(new CollisionBufferComponent()));
+            ecsWorld.ApplyDeferredCommands();
             soundManager = new SoundManager();
 
             WindowHandler.getWindow().UpdateFrame += delegate (FrameEventArgs eventArgs)

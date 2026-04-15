@@ -1,4 +1,5 @@
-﻿using Dino_Engine.ECS.Components;
+﻿using Brain_Fodder;
+using Dino_Engine.ECS.Components;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using SpaceEngine.Util;
@@ -20,36 +21,93 @@ namespace Dino_Engine.ECS.ECS_Architecture
         public ECSWorld()
         {
 
-            for (int i = 0; i<6; i++)
+            for (int i = 0; i<50; i++)
             {
                 Vector3 color = MyMath.rng3D();
                 if (color.Length<1.0) color.Normalize();
 
                 Entity circle2 = CreateEntity(
-                    new PositionComponent(new Vector2(200, 200)+MyMath.rng2D()*300),
-                    new CircleComponent(15),
-                    new VelocityComponent(MyMath.rng2DMinusPlus()*50),
+                    new PositionComponent(new Vector2(100, 100)+MyMath.rng2D()* new Vector2(400, 800)),
+                    new CircleComponent(20),
+                    new VelocityComponent(MyMath.rng2DMinusPlus()*0),
                     new ColourComponent(color),
                     new collidableTag(),
-                    new MassComponent(10)
+                    new PhysicsComponent(1, 0.45f),
+                    new GravityTag()
                 );
             }
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 3; i++)
             {
                 Vector3 color = MyMath.rng3D();
                 if (color.Length < 1.0) color.Normalize();
-
+                color = new Vector3(1.0f, 0.5f, 0.5f);
                 Entity circle2 = CreateEntity(
-                    new PositionComponent(new Vector2(200, 200) + MyMath.rng2D() * 300),
-                    new CircleComponent(35),
-                    new VelocityComponent(MyMath.rng2DMinusPlus() * 0),
+                    new PositionComponent(new Vector2(100, 100) + MyMath.rng2D() * new Vector2(400, 800)),
+                    new RectangleComponent(new Vector2(300, 10), MathF.PI/5f),
+                    new VelocityComponent(MyMath.rng2DMinusPlus() * 0.0f),
                     new ColourComponent(color),
                     new collidableTag(),
-                    new MassComponent(10)
+                    new PhysicsComponent(0.0f, 1)
                 );
             }
 
+            for (int i = 0; i < 12; i++)
+            {
+                Vector3 color = MyMath.rng3D();
+                if (color.Length < 1.0) color.Normalize();
+                color = new Vector3(1.0f, 0.5f, 0.5f);
+                Entity circle2 = CreateEntity(
+                    new PositionComponent(new Vector2(50, 0)* i),
+                    new CircleComponent(45),
+                    new VelocityComponent(MyMath.rng2DMinusPlus() * 0.0f),
+                    new ColourComponent(color),
+                    new collidableTag(),
+                    new PhysicsComponent(0, 1)
+                );
+            }
+            for (int i = 0; i < 12; i++)
+            {
+                Vector3 color = MyMath.rng3D();
+                if (color.Length < 1.0) color.Normalize();
+                color = new Vector3(1.0f, 0.5f, 0.5f);
+                Entity circle2 = CreateEntity(
+                    new PositionComponent(new Vector2(0, 950)+new Vector2(50, 0) * i),
+                    new CircleComponent(45),
+                    new VelocityComponent(MyMath.rng2DMinusPlus() * 0.0f),
+                    new ColourComponent(color),
+                    new collidableTag(),
+                    new PhysicsComponent(0, 1)
+                );
+            }
 
+            for (int i = 0; i < 20; i++)
+            {
+                Vector3 color = MyMath.rng3D();
+                if (color.Length < 1.0) color.Normalize();
+                color = new Vector3(1.0f, 0.5f, 0.5f);
+                Entity circle2 = CreateEntity(
+                    new PositionComponent(new Vector2(0, 0) + new Vector2(0, 50) * i),
+                    new CircleComponent(45),
+                    new VelocityComponent(MyMath.rng2DMinusPlus() * 0.0f),
+                    new ColourComponent(color),
+                    new collidableTag(),
+                    new PhysicsComponent(0, 1)
+                );
+            }
+            for (int i = 0; i < 20; i++)
+            {
+                Vector3 color = MyMath.rng3D();
+                if (color.Length < 1.0) color.Normalize();
+                color = new Vector3(1.0f, 0.5f, 0.5f);
+                Entity circle2 = CreateEntity(
+                    new PositionComponent(new Vector2(550, 0) + new Vector2(0, 50) * i),
+                    new CircleComponent(45),
+                    new VelocityComponent(MyMath.rng2DMinusPlus() * 0.0f),
+                    new ColourComponent(color),
+                    new collidableTag(),
+                    new PhysicsComponent(0, 1)
+                );
+            }
         }
 
         public void Update(float deltaTime)
@@ -182,6 +240,11 @@ namespace Dino_Engine.ECS.ECS_Architecture
 
             entityLocations.Remove(entity.Id);
             IDManager.Release(entity.Id);
+        }
+        public EntityView GetEntityView(Entity entity)
+        {
+            var location = entityLocations[entity.Id];
+            return new EntityView(location.archetype, location.index);
         }
 
         public T GetComponent<T>(Entity entity) where T : struct, IComponent

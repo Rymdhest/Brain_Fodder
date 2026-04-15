@@ -18,6 +18,14 @@ namespace Brain_Fodder.Rendering
         public Vector3 color;
     }
 
+    public struct RectangleRenderCommand
+    {
+        public Vector2 position;
+        public Vector2 size;
+        public Vector3 color;
+        public float rotation;
+    }
+
     internal class MasterRenderer
     {
         public static ShaderProgram simpleShader = new ShaderProgram("Simple_Vertex", "Simple_Fragment");
@@ -25,11 +33,12 @@ namespace Brain_Fodder.Rendering
         public static ShaderProgram RingShader = new ShaderProgram("Simple_Vertex", "Ring_Fragment");
         private glModel unitSquare;
         private glModel lineBase;
+        private glModel rectangleBase;
         private Matrix4 projection;
 
         public static List<CircleRenderCommand> circles = new List<CircleRenderCommand>();
+        public static List<RectangleRenderCommand> rectangles = new List<RectangleRenderCommand>();
         private List<Line> lines = new List<Line>();
-        private List<Ring> rings = new List<Ring>();
 
         private List<BouncyBall> balls = new List<BouncyBall>();
 
@@ -52,14 +61,17 @@ namespace Brain_Fodder.Rendering
         }
 
         public MasterRenderer() {
-            float[] positions = { -1, 1, -1, -1, 1, -1, 1, 1 };
+            float[] positions = { -0.5f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f };
             int[] indices = { 0, 1, 2, 3, 0, 2 };
             unitSquare = glLoader.loadToVAO(positions, indices);
 
             float[] positionsLine = { 0, 0.5f, 0, -0.5f, 1, -0.5f, 1, 0.5f };
             int[] indicesLine = { 0, 1, 2, 3, 0, 2 };
             lineBase = glLoader.loadToVAO(positionsLine, indicesLine);
-            
+
+            float[] positionsRectangle = { 0, 0.0f, 1, 0.0f, 1, 1.0f, 0, 1f };
+            int[] indicesRectangle = { 0, 1, 2, 3, 0, 2 };
+            rectangleBase = glLoader.loadToVAO(positionsLine, indicesLine);
         }
 
 
@@ -86,32 +98,12 @@ namespace Brain_Fodder.Rendering
         {
             prepareFrame();
 
-            renderLines();
-            renderRings();
+            renderRectangles();
             rendercircles();
 
             finishFrame();
         }
 
-        private void renderRings()
-        {
-            RingShader.bind();
-            foreach (Ring ring in rings)
-            {
-                RingShader.loadUniformMatrix4f("uProjection", projection);
-                RingShader.loadUniformVector2f("center", ring.Transformation.position);
-                RingShader.loadUniformVector3f("color", ring.Color);
-                RingShader.loadUniformFloat("radius", ring.Radius);
-                RingShader.loadUniformFloat("width", ring.Width);
-                RingShader.loadUniformMatrix4f("modelMatrix", MyMath.createTransformationMatrix(ring.Transformation));
-
-                glModel glmodel = unitSquare;
-                GL.BindVertexArray(glmodel.getVAOID());
-                GL.EnableVertexAttribArray(0);
-                GL.DrawElements(PrimitiveType.Triangles, glmodel.getVertexCount(), DrawElementsType.UnsignedInt, 0);
-            }
-            RingShader.unBind();
-        }
 
         private void rendercircles()
         {
@@ -122,7 +114,7 @@ namespace Brain_Fodder.Rendering
                 circleShader.loadUniformVector2f("center", circle.position);
                 circleShader.loadUniformVector3f("color", circle.color);
                 circleShader.loadUniformFloat("radius", circle.radius);
-                circleShader.loadUniformMatrix4f("modelMatrix", MyMath.createTransformationMatrix(circle.position, 0f, new Vector2(circle.radius)));
+                circleShader.loadUniformMatrix4f("modelMatrix", MyMath.createTransformationMatrix(circle.position, 0f, new Vector2(circle.radius*2f)));
 
                 glModel glmodel = unitSquare;
                 GL.BindVertexArray(glmodel.getVAOID());
@@ -133,21 +125,24 @@ namespace Brain_Fodder.Rendering
             circles.Clear();
         }
 
-        private void renderLines()
+        private void renderRectangles()
         {
             simpleShader.bind();
-            foreach (Line line in lines)
+            foreach (RectangleRenderCommand rectangle in rectangles)
             {
                 simpleShader.loadUniformMatrix4f("uProjection", projection);
-                simpleShader.loadUniformVector3f("color", line.Color);
-                simpleShader.loadUniformMatrix4f("modelMatrix", MyMath.createTransformationMatrix(line.Transformation));
+                simpleShader.loadUniformVector2f("center", rectangle.position);
+                simpleShader.loadUniformVector3f("color", rectangle.color);
+                simpleShader.loadUniformVector2f("size", rectangle.size);
+                simpleShader.loadUniformMatrix4f("modelMatrix", MyMath.createTransformationMatrix(rectangle.position, rectangle.rotation, rectangle.size));
 
-                glModel glmodel = lineBase;
+                glModel glmodel = unitSquare;
                 GL.BindVertexArray(glmodel.getVAOID());
                 GL.EnableVertexAttribArray(0);
                 GL.DrawElements(PrimitiveType.Triangles, glmodel.getVertexCount(), DrawElementsType.UnsignedInt, 0);
             }
             simpleShader.unBind();
+            rectangles.Clear();
         }
 
         public void update(float delta)
