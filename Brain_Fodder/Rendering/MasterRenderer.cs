@@ -98,8 +98,8 @@ namespace Brain_Fodder.Rendering
         {
             prepareFrame();
 
-            renderRectangles();
             rendercircles();
+            renderRectangles();
 
             finishFrame();
         }

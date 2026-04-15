@@ -20,6 +20,7 @@ namespace Dino_Engine.ECS.Systems
             float rotation = entity.Get<RectangleComponent>().rotation;
             Vector3 color = entity.Get<ColourComponent>().colour;
 
+
             RectangleRenderCommand command = new RectangleRenderCommand();
             command.position = position;
             command.size = size;

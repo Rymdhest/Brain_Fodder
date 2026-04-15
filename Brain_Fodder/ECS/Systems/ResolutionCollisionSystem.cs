@@ -21,7 +21,7 @@ namespace Dino_Engine.ECS.Systems
             if (buffer.Manifolds.Count == 0) return;
 
             // --- TUNING PARAMETERS ---
-            float slop = 0.02f;      // Allow 0.05 units of overlap before pushing
+            float slop = 0.03f;      // Allow 0.05 units of overlap before pushing
             float percent = 0.6f;    // Only fix 40% of the overlap per frame (Baumgarte)
             float minBounceVel = 10.0f; // Velocity threshold to stop tiny bounces
 
