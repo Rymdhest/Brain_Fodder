@@ -7,8 +7,10 @@ namespace Dino_Engine.ECS.Systems
 {
     public class ResolutionCollisionSystem : SystemBase
     {
-        // No bitmask needed; we act on the Singleton's list
-        public ResolutionCollisionSystem() : base(new BitMask()) { }
+        public ResolutionCollisionSystem() : base(new BitMask())
+        {
+            Priority = 10;
+        }
 
         protected override void UpdateEntity(EntityView entity, ECSWorld world, float deltaTime)
         {
@@ -74,7 +76,7 @@ namespace Dino_Engine.ECS.Systems
                 viewB.Set(velB);
             }
 
-            buffer.Clear();
+            //buffer.Clear();
         }
     }
 }

@@ -12,7 +12,7 @@ class SoundManager
     private static WaveOutEvent outputDevice = new WaveOutEvent();
     private static NAudio.Wave.SampleProviders.MixingSampleProvider mixer;
 
-    private static int count = 50;
+    private static int count = 80;
     public SoundManager()
     {
         var format = WaveFormat.CreateIeeeFloatWaveFormat(44100, 1);
@@ -76,7 +76,7 @@ class SoundManager
 
         //double freq = GetFrequency(scale[new Random().Next(scale.Length)]);
         double freq = GetFrequency(count);
-        count++;
+        //count++;
         freq /= 2.0;
 
         // Pre-calculate phase steps for efficiency

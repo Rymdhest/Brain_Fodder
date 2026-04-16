@@ -15,6 +15,7 @@ namespace Dino_Engine.ECS.Systems
         public BroadphaseCollisionSystem()
             : base(new BitMask(typeof(PositionComponent), typeof(collidableTag)))
         {
+            Priority = 5;
         }
 
 

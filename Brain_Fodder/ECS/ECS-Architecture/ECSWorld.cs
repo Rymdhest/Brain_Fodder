@@ -21,7 +21,7 @@ namespace Dino_Engine.ECS.ECS_Architecture
         public ECSWorld()
         {
 
-            for (int i = 0; i<150; i++)
+            for (int i = 0; i<1; i++)
             {
                 Vector3 color = MyMath.rng3D();
                 if (color.Length<1.0) color.Normalize();
@@ -34,10 +34,11 @@ namespace Dino_Engine.ECS.ECS_Architecture
                     new ColourComponent(color),
                     new collidableTag(),
                     new PhysicsComponent(1, 0.95f),
-                    new GravityTag()
+                    new GravityTag(),
+                    new CollisionSoundTag()
                 );
             }
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 10  ; i++)
             {
                 Vector3 color = MyMath.rng3D();
                 if (color.Length < 1.0) color.Normalize();
