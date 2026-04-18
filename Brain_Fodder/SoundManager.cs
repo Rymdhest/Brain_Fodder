@@ -12,7 +12,6 @@ class SoundManager
     private static WaveOutEvent outputDevice = new WaveOutEvent();
     private static NAudio.Wave.SampleProviders.MixingSampleProvider mixer;
 
-    private static int count = 80;
     public SoundManager()
     {
         var format = WaveFormat.CreateIeeeFloatWaveFormat(44100, 1);
@@ -63,7 +62,7 @@ class SoundManager
     }
 
 
-    public static short[] GenerateSound()
+    public static short[]  GenerateSound(int step)
     {
         int sampleRate = 44100;
         double duration = 1.0;
@@ -74,10 +73,9 @@ class SoundManager
         //int[] scale = { 60, 62, 64, 65, 67, 69, 71 };
         int[] scale = { 60, 62, 63, 65, 67, 68, 70 };
 
-        //double freq = GetFrequency(scale[new Random().Next(scale.Length)]);
-        double freq = GetFrequency(count);
-        //count++;
-        freq /= 2.0;
+        double freq = GetFrequency(scale[Math.Clamp(step, 0, 6)]);
+
+        freq /= 1.0;
 
         // Pre-calculate phase steps for efficiency
         double phaseStep = Math.Tau * freq / sampleRate;
@@ -110,7 +108,7 @@ class SoundManager
             double output = sampleValue * finalEnvelope * 0.5;
             audioData[i] = (short)(Math.Clamp(output, -1.0, 1.0) * short.MaxValue);
         }
-        Console.WriteLine("Generated sound with frequency: " + freq + " Hz");
+        //Console.WriteLine("Generated sound with frequency: " + freq + " Hz");
         return audioData;
     }
 }

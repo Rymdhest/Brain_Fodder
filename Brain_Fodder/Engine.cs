@@ -17,7 +17,7 @@ namespace Brain_Fodder
 
         public Engine()
         {
-            windowHandler = new WindowHandler(new Vector2i(1080, 1920) / 2);
+            windowHandler = new WindowHandler(new Vector2i(1080, 1920) / 2  );
             masterRenderer = new MasterRenderer();
 
             ComponentTypeRegistry.AutoRegisterAllComponents();

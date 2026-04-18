@@ -28,21 +28,21 @@ namespace Dino_Engine.ECS.ECS_Architecture
                 color =new Vector3(0.5f, 1.0f, 0.5f);
 
                 Entity circle2 = CreateEntity(
-                    new PositionComponent(new Vector2(100, 100)+MyMath.rng2D()* new Vector2(400, 800)),
+                    new PositionComponent(new Vector2(100, 800)+MyMath.rng2D()* new Vector2(400, 100)),
                     new CircleComponent(20),
                     new VelocityComponent(MyMath.rng2DMinusPlus()*0),
                     new ColourComponent(color),
                     new collidableTag(),
                     new PhysicsComponent(1, 0.95f),
                     new GravityTag(),
-                    new CollisionSoundTag()
+                    new CollisionSound()
                 );
             }
             for (int i = 0; i < 10  ; i++)
             {
                 Vector3 color = MyMath.rng3D();
                 if (color.Length < 1.0) color.Normalize();
-                color = new Vector3(1.0f, 0.5f, 0.5f);
+                color = new Vector3(0.5f, 0.4f, 0.7f);
                 Entity circle2 = CreateEntity(
                     new PositionComponent(new Vector2(100, 100) + MyMath.rng2D() * new Vector2(400, 800)),
                     new RectangleComponent(new Vector2(100+MyMath.rng()*300, 20), MathF.PI/5f),

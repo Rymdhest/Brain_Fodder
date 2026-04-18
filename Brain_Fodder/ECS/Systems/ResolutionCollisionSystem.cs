@@ -27,8 +27,10 @@ namespace Dino_Engine.ECS.Systems
             float percent = 0.6f;    // Only fix 40% of the overlap per frame (Baumgarte)
             float minBounceVel = 10.0f; // Velocity threshold to stop tiny bounces
 
-            foreach (var manifold in buffer.Manifolds)
+            for (int i = 0; i < buffer.Manifolds.Count; i++)
             {
+                var manifold = buffer.Manifolds[i];
+
                 EntityView viewA = world.GetEntityView(manifold.EntityA);
                 EntityView viewB = world.GetEntityView(manifold.EntityB);
 
@@ -74,6 +76,9 @@ namespace Dino_Engine.ECS.Systems
 
                 viewA.Set(velA);
                 viewB.Set(velB);
+
+                manifold.Impulse = MathF.Abs(j);
+                buffer.Manifolds[i] = manifold;
             }
 
             //buffer.Clear();

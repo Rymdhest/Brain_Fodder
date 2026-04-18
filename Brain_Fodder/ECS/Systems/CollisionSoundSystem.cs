@@ -1,6 +1,8 @@
-﻿using Dino_Engine.ECS.Components;
+﻿using Brain_Fodder;
+using Dino_Engine.ECS.Components;
 using Dino_Engine.ECS.ECS_Architecture;
 using OpenTK.Mathematics;
+using SpaceEngine.RenderEngine;
 using System;
 
 namespace Dino_Engine.ECS.Systems
@@ -9,7 +11,7 @@ namespace Dino_Engine.ECS.Systems
     {
         public CollisionSoundSystem() : base(new BitMask())
         {
-            Priority = 7;
+            Priority = 11;
         }
 
         public override void Update(ECSWorld world, float deltaTime)
@@ -18,19 +20,28 @@ namespace Dino_Engine.ECS.Systems
 
             foreach (var manifold in buffer.Manifolds)
             {
-                proccessEntity(world.GetEntityView(manifold.EntityA));
-                proccessEntity(world.GetEntityView(manifold.EntityB));
-
+                proccessEntity(world.GetEntityView(manifold.EntityA), manifold);
+                proccessEntity(world.GetEntityView(manifold.EntityB), manifold);
             }
         }
 
-        private void proccessEntity(EntityView entity)
+        private void proccessEntity(EntityView entity, CollisionManifold manifold)
         {
-            if (entity.Has<CollisionSoundTag>())
+            if (!entity.Has<CollisionSound>()) return;
+            CollisionSound soundComponent = entity.Get<CollisionSound>();
+            if (WindowHandler.getTotalTime() - soundComponent.timeLastPlayed < soundComponent.cooldownSeconds) return;
+            if (manifold.Impulse < soundComponent.minImpulse) return;
+
+            Console.WriteLine($"Playing collision sound with impulse {manifold.Impulse}");
+
+
+
+            SoundManager.Play(SoundManager.GenerateSound((int)(manifold.Impulse/100)));
+            entity.Set(new CollisionSound
             {
-                SoundManager.Play(SoundManager.GenerateSound());
-            }
-           
+                timeLastPlayed = WindowHandler.getTotalTime(),
+                cooldownSeconds = entity.Get<CollisionSound>().cooldownSeconds
+            });
         }
 
         protected override void UpdateEntity(EntityView entity, ECSWorld world, float deltaTime)

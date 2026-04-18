@@ -17,6 +17,7 @@ namespace SpaceEngine.RenderEngine
         private Stopwatch secondStopWatchUpdate = new Stopwatch();
         private Stopwatch secondStopWatchRender = new Stopwatch();
         private float delta = 0f;
+        private static float totalTime = 0f;
         private int framesLastSecondUpdate = 0;
         private int framesLastSecondRender = 0;
         private int framesCurrentSecondUpate = 0;
@@ -59,6 +60,7 @@ namespace SpaceEngine.RenderEngine
         public void update(float delta)
         {
             this.delta = (float)frameStopWatch.Elapsed.TotalSeconds;
+            totalTime += this.delta;
             frameStopWatch.Restart();
 
             if (secondStopWatchUpdate.Elapsed.TotalMilliseconds >= 1000.0)
@@ -89,6 +91,10 @@ namespace SpaceEngine.RenderEngine
         public float getDelta()
         {
             return delta;
+        }
+        public static float getTotalTime()
+        {
+            return totalTime;
         }
         public static void setMouseGrabbed(bool setTo)
         {

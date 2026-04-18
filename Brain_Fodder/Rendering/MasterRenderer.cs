@@ -111,10 +111,9 @@ namespace Brain_Fodder.Rendering
             foreach (CircleRenderCommand circle in circles)
             {
                 circleShader.loadUniformMatrix4f("uProjection", projection);
-                circleShader.loadUniformVector2f("center", circle.position);
                 circleShader.loadUniformVector3f("color", circle.color);
                 circleShader.loadUniformFloat("radius", circle.radius);
-                circleShader.loadUniformMatrix4f("modelMatrix", MyMath.createTransformationMatrix(circle.position, 0f, new Vector2(circle.radius*2f)));
+                circleShader.loadUniformMatrix4f("modelMatrix", MyMath.createTransformationMatrix(circle.position, 0f, new Vector2(circle.radius*2)));
 
                 glModel glmodel = unitSquare;
                 GL.BindVertexArray(glmodel.getVAOID());
@@ -131,9 +130,7 @@ namespace Brain_Fodder.Rendering
             foreach (RectangleRenderCommand rectangle in rectangles)
             {
                 simpleShader.loadUniformMatrix4f("uProjection", projection);
-                simpleShader.loadUniformVector2f("center", rectangle.position);
                 simpleShader.loadUniformVector3f("color", rectangle.color);
-                simpleShader.loadUniformVector2f("size", rectangle.size);
                 simpleShader.loadUniformMatrix4f("modelMatrix", MyMath.createTransformationMatrix(rectangle.position, rectangle.rotation, rectangle.size));
 
                 glModel glmodel = unitSquare;
@@ -160,7 +157,6 @@ namespace Brain_Fodder.Rendering
                     ball.Velocity = ReflectCircleCollision(ball.Velocity, ball.Model.Transformation.position, border.Transformation.position);
                     ball.Velocity *= 1.06f;
                     //SoundManager.Play(MathF.Sqrt( ball.Velocity.Length)*0.02f);
-                    SoundManager.Play(SoundManager.GenerateSound());
                     Line line = new Line(collisionPoint, ball.Model.Transformation.position,3.0f);
                     line.Color = ball.Model.Color;
 

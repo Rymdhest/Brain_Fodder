@@ -19,8 +19,9 @@ namespace Dino_Engine.ECS.Components
     {
         public Entity EntityA;
         public Entity EntityB;
-        public Vector2 Normal;      // Direction to push EntityA
-        public float Penetration;   // Distance of overlap
+        public Vector2 Normal;      
+        public float Penetration;
+        public float Impulse;
     }
 
     public struct CollisionBufferComponent : IComponent
