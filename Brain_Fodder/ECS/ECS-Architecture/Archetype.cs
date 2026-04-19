@@ -1,5 +1,7 @@
 ﻿
 
+using Brain_Fodder;
+
 namespace Dino_Engine.ECS.ECS_Architecture
 {
     public class Archetype
@@ -31,7 +33,26 @@ namespace Dino_Engine.ECS.ECS_Architecture
                 compArray.Add((dynamic)components[compID]);
             }
         }
+        public void ClearAllEntitiesExcept(params Entity[] exceptions)
+        {
+            for (int i = 0; i < entities.Count; i++)
+            {
+                bool isException = false;
+                for (int j = 0; j < exceptions.Length; j++)
+                {
+                    if (entities[i].Id == exceptions[j].Id)
+                    {
+                        isException = true;
+                        break;
+                    }
+                }
 
+                if (!isException)
+                {
+                    Engine.Instance.ecsWorld.DestroyEntity(entities[i]);
+                }
+            }
+        }
         public void RemoveEntityAt(int index)
         {
             foreach (var kv in ComponentArrays)

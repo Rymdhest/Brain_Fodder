@@ -14,23 +14,39 @@ namespace Dino_Engine.ECS.ECS_Architecture
         private Dictionary<BitMask, Archetype> archetypes = new();
         private Dictionary<uint, (Archetype archetype, int index)> entityLocations = new();
         private Dictionary<Type, Entity> SingletonToEntity = new();
-
         public Entity Camera;
 
         public int Count => entityLocations.Count;
         public ECSWorld()
         {
+            SpawnLevel();
 
-            for (int i = 0; i<1; i++)
+        }
+
+        public void clearLevel()
+        {
+            ClearAllEntitiesExcept();
+            SingletonToEntity.Clear();
+            ApplyDeferredCommands();
+        }
+
+        public void SpawnLevel()
+        {
+            RegisterSingleton<CollisionBufferComponent>(CreateEntity(new CollisionBufferComponent()));
+            RegisterSingleton<ConfigComponent>(CreateEntity(new ConfigComponent()));
+            RegisterSingleton<ConfigComponent>(CreateEntity(new ConfigComponent()));
+            ApplyDeferredCommands();
+
+            for (int i = 0; i < 1; i++)
             {
                 Vector3 color = MyMath.rng3D();
-                if (color.Length<1.0) color.Normalize();
-                color =new Vector3(0.5f, 1.0f, 0.5f);
+                if (color.Length < 1.0) color.Normalize();
+                color = new Vector3(0.5f, 1.0f, 0.5f);
 
                 Entity circle2 = CreateEntity(
-                    new PositionComponent(new Vector2(100, 800)+MyMath.rng2D()* new Vector2(400, 100)),
+                    new PositionComponent(new Vector2(100, 800) + MyMath.rng2D() * new Vector2(400, 100)),
                     new CircleComponent(20),
-                    new VelocityComponent(MyMath.rng2DMinusPlus()*0),
+                    new VelocityComponent(MyMath.rng2DMinusPlus() * 0),
                     new ColourComponent(color),
                     new collidableTag(),
                     new PhysicsComponent(1, 0.95f),
@@ -38,19 +54,42 @@ namespace Dino_Engine.ECS.ECS_Architecture
                     new CollisionSound()
                 );
             }
-            for (int i = 0; i < 10  ; i++)
+            for (int i = 0; i < 15; i++)
             {
+                float spin = 0;
+                Vector2 osc = new Vector2(0f, 0f);
+                switch (MyMath.rand.Next(4))
+                {
+                    case 0:
+                        spin = 0.5f + MyMath.rng() * 2f;
+                        spin = 0.0f + MyMath.rngMinusPlus() * 2f;
+                        break;
+                    case 1:
+                        osc.X = 100 + MyMath.rngMinusPlus() * 200f;
+                        break;
+                    case 2:
+                        osc.Y = 100 + MyMath.rngMinusPlus() * 300f;
+                        break;
+                    default:
+                        spin = -0.5f + -MyMath.rng() * 2f;
+                        break;
+                }
+
+
+
                 Vector3 color = MyMath.rng3D();
                 if (color.Length < 1.0) color.Normalize();
                 color = new Vector3(0.5f, 0.4f, 0.7f);
+                Vector2 pos = new Vector2(100, 100) + MyMath.rng2D() * new Vector2(400, 800);
                 Entity circle2 = CreateEntity(
-                    new PositionComponent(new Vector2(100, 100) + MyMath.rng2D() * new Vector2(400, 800)),
-                    new RectangleComponent(new Vector2(100+MyMath.rng()*300, 20), MathF.PI/5f),
+                    new PositionComponent(pos),
+                    new RectangleComponent(new Vector2(100 + MyMath.rng() * 200, 10), 0),
                     new VelocityComponent(MyMath.rng2DMinusPlus() * 0.0f),
                     new ColourComponent(color),
                     new collidableTag(),
-                    new SpinComponent(MyMath.rngMinusPlus()),
-                    new PhysicsComponent(0.0f, 1)
+                    new SpinComponent(spin),
+                    new PhysicsComponent(0.0f, 1),
+                    new OscillatorComponent(pos, pos + osc)
                 );
             }
 
@@ -60,7 +99,7 @@ namespace Dino_Engine.ECS.ECS_Architecture
                 if (color.Length < 1.0) color.Normalize();
                 color = new Vector3(1.0f, 0.5f, 0.5f);
                 Entity circle2 = CreateEntity(
-                    new PositionComponent(new Vector2(50, 0)* i),
+                    new PositionComponent(new Vector2(50, 0) * i),
                     new CircleComponent(45),
                     new VelocityComponent(MyMath.rng2DMinusPlus() * 0.0f),
                     new ColourComponent(color),
@@ -74,7 +113,7 @@ namespace Dino_Engine.ECS.ECS_Architecture
                 if (color.Length < 1.0) color.Normalize();
                 color = new Vector3(1.0f, 0.5f, 0.5f);
                 Entity circle2 = CreateEntity(
-                    new PositionComponent(new Vector2(0, 950)+new Vector2(50, 0) * i),
+                    new PositionComponent(new Vector2(0, 950) + new Vector2(50, 0) * i),
                     new CircleComponent(45),
                     new VelocityComponent(MyMath.rng2DMinusPlus() * 0.0f),
                     new ColourComponent(color),
@@ -111,6 +150,15 @@ namespace Dino_Engine.ECS.ECS_Architecture
                     new PhysicsComponent(0, 1)
                 );
             }
+        }
+
+        public void ClearAllEntitiesExcept(params Entity[] exceptions)
+        {
+            foreach (var (bitmask, archetype) in archetypes)
+            {
+                archetype.ClearAllEntitiesExcept(exceptions);
+            }
+            ApplyDeferredCommands();
         }
 
         public void Update(float deltaTime)

@@ -7,16 +7,20 @@ using SpaceEngine.RenderEngine;
 
 namespace Brain_Fodder
 {
-    internal class Engine
+    public class Engine
     {
         SoundManager soundManager;
         WindowHandler windowHandler;
         MasterRenderer masterRenderer;
-        ECSWorld ecsWorld;
+        public ECSWorld ecsWorld;
+        private static Engine? _instance;
         public static float EngineDeltaClock = 0f;
+
+        public static Engine? Instance { get => _instance; }
 
         public Engine()
         {
+            _instance = this;
             windowHandler = new WindowHandler(new Vector2i(1080, 1920) / 2  );
             masterRenderer = new MasterRenderer();
 
@@ -24,7 +28,6 @@ namespace Brain_Fodder
             SystemRegistry.AutoRegisterAllSystems();
             ecsWorld = new ECSWorld();
 
-            ecsWorld.RegisterSingleton<CollisionBufferComponent>(ecsWorld.CreateEntity(new CollisionBufferComponent()));
             ecsWorld.ApplyDeferredCommands();
             soundManager = new SoundManager();
 
@@ -45,7 +48,8 @@ namespace Brain_Fodder
             {
                 if (eventArgs.Key == OpenTK.Windowing.GraphicsLibraryFramework.Keys.R)
                 {
-
+                    ecsWorld.clearLevel();
+                    ecsWorld.SpawnLevel();
                 }
             };
         }

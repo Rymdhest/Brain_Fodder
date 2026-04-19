@@ -28,7 +28,7 @@ namespace Brain_Fodder.Rendering
 
     internal class MasterRenderer
     {
-        public static ShaderProgram simpleShader = new ShaderProgram("Simple_Vertex", "Simple_Fragment");
+        public static ShaderProgram simpleShader = new ShaderProgram("Simple_Vertex", "Rectangle_Fragment");
         public static ShaderProgram circleShader = new ShaderProgram("Simple_Vertex", "Circle_Fragment");
         public static ShaderProgram RingShader = new ShaderProgram("Simple_Vertex", "Ring_Fragment");
         private glModel unitSquare;
