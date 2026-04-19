@@ -1,12 +1,8 @@
-﻿using NAudio.Wave;
-using NAudio.Wave.SampleProviders;
-using OpenTK.Audio.OpenAL;
-using SpaceEngine.Util;
-using System.Runtime.InteropServices;
+﻿using Brain_Fodder;
+using NAudio.Wave;
 
 class SoundManager
 {
-    private static List<short> recordingBuffer = new List<short>();
     public static bool IsRecording = false;
 
     private static WaveOutEvent outputDevice = new WaveOutEvent();
@@ -44,11 +40,6 @@ class SoundManager
         // 4. Push the float stream directly into the mixer!
         mixer.AddMixerInput(floatStream);
 
-        // 5. Save it to our export buffer for the final 30-sec video
-        if (IsRecording)
-        {
-            recordingBuffer.AddRange(soundData);
-        }
     }
 
     public static void update(float delta)
