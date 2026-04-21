@@ -20,49 +20,48 @@ public sealed class VideoRecorder : IDisposable
 
         _stopping = false;
 
-        string ffmpegArgs =
-            $"-y " +
-            $"-hide_banner -loglevel info " +
-            $"-f rawvideo -pixel_format rgba -video_size {width}x{height} -framerate {fps} -i - " +
-            $"-vf vflip " +
-            $"-c:v libx264 -preset veryfast -crf 18 -pix_fmt yuv420p " +
-            $"\"{rawVideoPath}\"";
+        // Use a List for arguments to prevent spacing/parsing errors
+        var args = new[]
+        {
+        "-y",
+        "-hide_banner", "-loglevel", "info",
+        "-f", "rawvideo", "-pixel_format", "rgba", "-video_size", $"{width}x{height}", "-framerate", $"{fps.ToString()}", "-i", "-",
+        "-vf", "vflip",
+        "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", "-pix_fmt", "yuv420p",
+        $"\"{rawVideoPath}\""
+    };
 
         var startInfo = new ProcessStartInfo
         {
             FileName = "ffmpeg",
-            Arguments = ffmpegArgs,
+            Arguments = string.Join(" ", args),
             UseShellExecute = false,
+            CreateNoWindow = false, // Keep false for now to see errors
             RedirectStandardInput = true,
             RedirectStandardError = true,
-            RedirectStandardOutput = false,
-            CreateNoWindow = true,
+            RedirectStandardOutput = true,
             WorkingDirectory = Path.GetDirectoryName(rawVideoPath) ?? "."
         };
 
         _ffmpeg = new Process { StartInfo = startInfo };
 
+        // 1. Hook up the event handler
+        _ffmpeg.ErrorDataReceived += (s, e) =>
+        {
+            if (!string.IsNullOrEmpty(e.Data))
+                Console.WriteLine($"FFMPEG ERROR: {e.Data}");
+        };
+
+        // 2. Start the process FIRST
         if (!_ffmpeg.Start())
             throw new InvalidOperationException("Failed to start FFmpeg.");
 
-        // Drain stderr so it does not hang
-        _stderrTask = Task.Run(async () =>
-        {
-            try
-            {
-                while (_ffmpeg != null && !_ffmpeg.HasExited)
-                {
-                    string? line = await _ffmpeg.StandardError.ReadLineAsync();
-                    if (line == null) break;
-                    Debug.WriteLine(line);
-                }
-            }
-            catch
-            {
-            }
-        });
+        // 3. Begin reading ONLY after Start()
+        _ffmpeg.BeginErrorReadLine();
 
-        // Set up stdin writer
+        // Note: Removed the _stderrTask entirely as it conflicts with ErrorDataReceived
+
+        // 4. Set up stdin writer
         _videoWriter = new BinaryWriter(_ffmpeg.StandardInput.BaseStream);
     }
 
