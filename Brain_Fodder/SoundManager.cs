@@ -102,4 +102,75 @@ class SoundManager
         //Console.WriteLine("Generated sound with frequency: " + freq + " Hz");
         return audioData;
     }
+    public static short[] GenerateCelebrationSound()
+    {
+        int sampleRate = 44100;
+        double duration = 2.0;
+        int totalSamples = (int)(sampleRate * duration);
+        float[] buffer = new float[totalSamples];
+
+        // 1. The Start: Rising Arpeggio (C Major)
+        int[] arpeggio = { 72, 76, 79 };
+        double[] arpeggioStarts = { 0.0, 0.15, 0.3 };
+
+        // 2. The Finish: Major Chord (C, E, G, C)
+        int[] chord = { 72, 76, 79, 84 };
+
+        for (int i = 0; i < totalSamples; i++)
+        {
+            double time = (double)i / sampleRate;
+            float sampleValue = 0;
+
+            // --- PLAY ARPEGGIO ---
+            for (int n = 0; n < arpeggio.Length; n++)
+            {
+                if (time >= arpeggioStarts[n] && time < arpeggioStarts[n] + 0.15)
+                {
+                    double localTime = time - arpeggioStarts[n];
+                    sampleValue += GenerateBellWave(arpeggio[n], localTime) * 0.4f;
+                }
+            }
+
+            // --- PLAY CHORD FINALE ---
+            if (time >= 0.6 && time < duration)
+            {
+                double localTime = time - 0.6;
+                // Longer decay for the finale to let it ring out
+                float decay = (float)Math.Exp(-2.0 * localTime);
+
+                foreach (int note in chord)
+                {
+                    sampleValue += GenerateBellWave(note, localTime) * decay * 0.3f;
+                }
+            }
+
+            buffer[i] = sampleValue * 0.15f; // Safe total volume
+        }
+
+        // Convert to short
+        short[] audioData = new short[totalSamples];
+        for (int i = 0; i < totalSamples; i++)
+        {
+            audioData[i] = (short)(Math.Clamp(buffer[i], -1.0f, 1.0f) * short.MaxValue);
+        }
+        return audioData;
+    }
+
+    // The "Golden" Synthesis: Fundamental + Octave + Fifth
+    // This creates the chime sound without the "beepy" sine wave feel.
+    private static float GenerateBellWave(int midiNote, double time)
+    {
+        double freq = GetFrequency(midiNote);
+        double phase = Math.Tau * freq * time;
+
+        // Fundamental (1.0) + Octave (0.5) + Fifth (0.25)
+        float bell = (float)(Math.Sin(phase) * 1.0 +
+                             Math.Sin(phase * 2.0) * 0.5 +
+                             Math.Sin(phase * 3.0) * 0.25);
+
+        // Sharp Attack (prevent clicking) + Exponential Decay
+        float envelope = (float)(Math.Min(1.0, time / 0.01) * Math.Exp(-5.0 * time));
+
+        return bell * envelope;
+    }
 }

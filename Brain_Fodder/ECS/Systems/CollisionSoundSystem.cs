@@ -37,6 +37,9 @@ namespace Dino_Engine.ECS.Systems
 
 
             SoundManager.Play(SoundManager.GenerateSound((int)(manifold.Impulse/300)));
+            //SoundManager.Play(SoundManager.GenerateCelebrationSound());
+
+            
             entity.Set(new CollisionSound
             {
                 timeLastPlayed = WindowHandler.getTotalTime(),

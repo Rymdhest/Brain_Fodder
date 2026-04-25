@@ -7,6 +7,7 @@ namespace Dino_Engine.ECS.Components
     {
         public float MinGameTime = 15;
         public float MaxGameTime = 25;
+        public float CelebrationDuration = 2.0f;
 
         public ConfigComponent()
         {

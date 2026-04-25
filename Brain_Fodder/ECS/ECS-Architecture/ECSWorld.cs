@@ -37,35 +37,32 @@ namespace Dino_Engine.ECS.ECS_Architecture
             RegisterSingleton<ConfigComponent>(CreateEntity(new ConfigComponent()));
             ApplyDeferredCommands();
 
+            Vector2 center = Engine.Instance.outerResolution / 2;
+
 
             Entity spawner = CreateEntity(
-                new SpawnerComponent(),
-                new PositionComponent(250, 200)
+                new SpawnerComponent(0.4f),
+                new PositionComponent(center)
                 );
 
-            Entity ring = CreateEntity(
-                new PositionComponent(new Vector2(300, 700)),
-                new RingComponent(300, 15),
-                new VelocityComponent(MyMath.rng2DMinusPlus() * 0.0f),
-                new ColourComponent(new Vector3(1.0f ,0.0f, 0.0f)),
-                new collidableTag(),
-                new PhysicsComponent(0, 1)
-            );
+            Vector3 color = MyMath.rng3D();
+            if (color.Length < 1.0) color.Normalize();
 
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 4; i++)
             {
                 Vector3 color3 = MyMath.rng3D();
                 if (color3.Length < 1.0) color3.Normalize();
                 color3 = new Vector3(0.5f, 1.0f, 0.5f);
 
                 Entity circle2 = CreateEntity(
-                    new PositionComponent(new Vector2(100, 800) + MyMath.rng2D() * new Vector2(400, 100)),
+                    new PositionComponent(center),
                     //new RingComponent(20, 5),
                     new CircleComponent(20),
                     new VelocityComponent(MyMath.rng2DMinusPlus() * 0),
                     new ColourComponent(color3),
                     new collidableTag(),
-                    new PhysicsComponent(1, 0.9f),
+                    new SizeChangerComponent(2f),
+                    new PhysicsComponent(1, 1.05f),
                     new GravityTag(),
                     new CollisionSound(),
                     new KillerTag()
@@ -110,54 +107,8 @@ namespace Dino_Engine.ECS.ECS_Architecture
                 );
             }
 
-            Vector3 color = MyMath.rng3D();
-            if (color.Length < 1.0) color.Normalize();
 
-            for (int i = 0; i < 12; i++)
-            {
-                Entity circle2 = CreateEntity(
-                    new PositionComponent(new Vector2(50, 0) * i),
-                    new CircleComponent(45),
-                    new VelocityComponent(MyMath.rng2DMinusPlus() * 0.0f),
-                    new ColourComponent(color),
-                    new collidableTag(),
-                    new PhysicsComponent(0, 1)
-                );
-            }
-            for (int i = 0; i < 12; i++)
-            {
-                Entity circle2 = CreateEntity(
-                    new PositionComponent(new Vector2(0, 950) + new Vector2(50, 0) * i),
-                    new CircleComponent(45),
-                    new VelocityComponent(MyMath.rng2DMinusPlus() * 0.0f),
-                    new ColourComponent(color),
-                    new collidableTag(),
-                    new PhysicsComponent(0, 1)
-                );
-            }
 
-            for (int i = 0; i < 20; i++)
-            {
-                Entity circle2 = CreateEntity(
-                    new PositionComponent(new Vector2(0, 0) + new Vector2(0, 50) * i),
-                    new CircleComponent(45),
-                    new VelocityComponent(MyMath.rng2DMinusPlus() * 0.0f),
-                    new ColourComponent(color),
-                    new collidableTag(),
-                    new PhysicsComponent(0, 1)
-                );
-            }
-            for (int i = 0; i < 20; i++)
-            {
-                Entity circle2 = CreateEntity(
-                    new PositionComponent(new Vector2(550, 0) + new Vector2(0, 50) * i),
-                    new CircleComponent(45),
-                    new VelocityComponent(MyMath.rng2DMinusPlus() * 0.0f),
-                    new ColourComponent(color),
-                    new collidableTag(),
-                    new PhysicsComponent(0, 1)
-                );
-            }
         }
 
         public void ClearAllEntitiesExcept(params Entity[] exceptions)

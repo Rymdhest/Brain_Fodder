@@ -10,7 +10,7 @@ namespace Dino_Engine.ECS.Components
         public PhysicsComponent(float mass, float restitution)
         {
             InvMass = mass > 0 ? 1.0f / mass : 0f;
-            Restitution = Math.Clamp(restitution, 0f, 1f);
+            Restitution = Math.Clamp(restitution, 0f, 100f);
         }
 
     }

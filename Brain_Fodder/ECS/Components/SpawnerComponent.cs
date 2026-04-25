@@ -7,10 +7,11 @@ namespace Dino_Engine.ECS.Components
     {
 
         public float SpawnInterval = 1.0f;
-        public float lastSpawnTime = 0.0f;
+        public float lastSpawnTime = 99999.0f;
 
-        public SpawnerComponent()
+        public SpawnerComponent(float SpawnInterval)
         {
+            this.SpawnInterval = SpawnInterval;
         }
 
     }

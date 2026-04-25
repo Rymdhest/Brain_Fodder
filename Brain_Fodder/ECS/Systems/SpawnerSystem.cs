@@ -37,6 +37,7 @@ namespace Dino_Engine.ECS.Systems
         private void SpawnEntity(ECSWorld world, SpawnerComponent spawner, PositionComponent position)
         {
             // Create a new entity
+            /*
             Entity newEntity = world.CreateEntity(
                     new PositionComponent(position.value+new Vector2(MyMath.rngMinusPlus()*100, 0)),
                     new RectangleComponent(new Vector2(100 + MyMath.rng() * 300, 10), MyMath.rngMinusPlus()*0.1f),
@@ -47,6 +48,17 @@ namespace Dino_Engine.ECS.Systems
                     new VelocityComponent(new Vector2(0f, 100.0f)),
                     new KillableTag()
                 );
+            */
+            Entity newEntity = world.CreateEntity(
+                new PositionComponent(position.value),
+                new RingComponent(1080/4f, 10),
+                new ColourComponent(new Vector3(1.0f, 0.0f, 0.5f)),
+                new collidableTag(),
+                new PhysicsComponent(0.0f, 1.05f),
+                new VelocityComponent(new Vector2(0f, 0f)),
+                new SizeChangerComponent(-80),
+                new KillableTag()
+            );
         }
     }
 }
