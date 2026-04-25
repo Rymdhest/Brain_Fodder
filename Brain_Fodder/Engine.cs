@@ -2,6 +2,7 @@
 using Brain_Fodder.Rendering;
 using Dino_Engine.ECS.Components;
 using Dino_Engine.ECS.ECS_Architecture;
+using Dino_Engine.Rendering;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
@@ -21,12 +22,16 @@ namespace Brain_Fodder
         public static float EngineDeltaClock = 0f;
         private int pbo;
         private Recorder recorder = new Recorder();
+        private FrameBuffer frameBuffer;
+        public Vector2i innerResolution = new Vector2i(1080, 1920)*1;
+        public Vector2i outerResolution = new Vector2i(1080, 1920) / 2;
         public static Engine? Instance { get => _instance; }
 
         public Engine()
         {
+
             _instance = this;
-            windowHandler = new WindowHandler(new Vector2i(1080, 1920) / 2  );
+            windowHandler = new WindowHandler(outerResolution);
             masterRenderer = new MasterRenderer();
 
             ComponentTypeRegistry.AutoRegisterAllComponents();
@@ -61,8 +66,18 @@ namespace Brain_Fodder
                 }
             };
 
-            int width = WindowHandler.getResolution().X;
-            int height = WindowHandler.getResolution().Y;
+
+
+            FrameBufferSettings frameBufferSettings = new FrameBufferSettings(innerResolution);
+            frameBufferSettings.drawBuffers.Add(new DrawBufferSettings(FramebufferAttachment.ColorAttachment0));
+            frameBuffer = new FrameBuffer(frameBufferSettings);
+
+
+
+
+
+            int width = innerResolution.X;
+            int height = innerResolution.Y;
             pbo = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.PixelPackBuffer, pbo);
             GL.BufferData(BufferTarget.PixelPackBuffer, width * height * 4, IntPtr.Zero, BufferUsageHint.StreamRead);
@@ -181,7 +196,7 @@ namespace Brain_Fodder
             string videoPath = Path.Combine(myEngineFolder, "raw_video.mp4");
             string audioPath = Path.Combine(myEngineFolder, "audio.wav");
 
-            recorder.StartRecording(WindowHandler.getResolution(), 60);
+            recorder.StartRecording(innerResolution, 60);
 
             WindowHandler.getWindow().Run();
         }
@@ -195,12 +210,15 @@ namespace Brain_Fodder
         }
         private void render()
         {
+
+            frameBuffer.bind();
+
             windowHandler.render();
             masterRenderer.render();
 
 
-            int width = WindowHandler.getResolution().X;
-            int height = WindowHandler.getResolution().Y;
+            int width = innerResolution.X;
+            int height = innerResolution.Y;
             // 1. Tell GPU to copy framebuffer to PBO
             GL.BindBuffer(BufferTarget.PixelPackBuffer, pbo);
             GL.ReadPixels(0, 0, width, height, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
@@ -213,6 +231,8 @@ namespace Brain_Fodder
 
             // 3. Send to FFmpeg
             recorder.RenderFrame(frameData);
+
+            frameBuffer.resolveToScreen();
         }
     }
 }

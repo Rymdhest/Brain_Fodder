@@ -37,28 +37,36 @@ namespace Dino_Engine.ECS.ECS_Architecture
             RegisterSingleton<ConfigComponent>(CreateEntity(new ConfigComponent()));
             ApplyDeferredCommands();
 
+
+            Entity spawner = CreateEntity(
+                new SpawnerComponent(),
+                new PositionComponent(250, -50)
+                );
+
+
             for (int i = 0; i < 1; i++)
             {
-                Vector3 color = MyMath.rng3D();
-                if (color.Length < 1.0) color.Normalize();
-                color = new Vector3(0.5f, 1.0f, 0.5f);
+                Vector3 color3 = MyMath.rng3D();
+                if (color3.Length < 1.0) color3.Normalize();
+                color3 = new Vector3(0.5f, 1.0f, 0.5f);
 
                 Entity circle2 = CreateEntity(
                     new PositionComponent(new Vector2(100, 800) + MyMath.rng2D() * new Vector2(400, 100)),
                     new CircleComponent(20),
                     new VelocityComponent(MyMath.rng2DMinusPlus() * 0),
-                    new ColourComponent(color),
+                    new ColourComponent(color3),
                     new collidableTag(),
-                    new PhysicsComponent(1, 0.95f),
+                    new PhysicsComponent(1, 0.9f),
                     new GravityTag(),
-                    new CollisionSound()
+                    new CollisionSound(),
+                    new KillerTag()
                 );
             }
-            for (int i = 0; i < 15; i++)
+            for (int i = 0; i < 0; i++)
             {
                 float spin = 0;
                 Vector2 osc = new Vector2(0f, 0f);
-                switch (MyMath.rand.Next(4))
+                switch (MyMath.rand.Next(1))
                 {
                     case 0:
                         spin = 0.5f + MyMath.rng() * 2f;
@@ -77,15 +85,15 @@ namespace Dino_Engine.ECS.ECS_Architecture
 
 
 
-                Vector3 color = MyMath.rng3D();
-                if (color.Length < 1.0) color.Normalize();
-                color = new Vector3(0.5f, 0.4f, 0.7f);
+                Vector3 color2 = MyMath.rng3D();
+                if (color2.Length < 1.0) color2.Normalize();
+                color2 = new Vector3(0.5f, 0.4f, 0.7f);
                 Vector2 pos = new Vector2(100, 100) + MyMath.rng2D() * new Vector2(400, 800);
                 Entity circle2 = CreateEntity(
                     new PositionComponent(pos),
                     new RectangleComponent(new Vector2(100 + MyMath.rng() * 200, 10), 0),
                     new VelocityComponent(MyMath.rng2DMinusPlus() * 0.0f),
-                    new ColourComponent(color),
+                    new ColourComponent(color2),
                     new collidableTag(),
                     new SpinComponent(spin),
                     new PhysicsComponent(0.0f, 1),
@@ -93,11 +101,11 @@ namespace Dino_Engine.ECS.ECS_Architecture
                 );
             }
 
+            Vector3 color = MyMath.rng3D();
+            if (color.Length < 1.0) color.Normalize();
+
             for (int i = 0; i < 0; i++)
             {
-                Vector3 color = MyMath.rng3D();
-                if (color.Length < 1.0) color.Normalize();
-                color = new Vector3(1.0f, 0.5f, 0.5f);
                 Entity circle2 = CreateEntity(
                     new PositionComponent(new Vector2(50, 0) * i),
                     new CircleComponent(45),
@@ -109,9 +117,6 @@ namespace Dino_Engine.ECS.ECS_Architecture
             }
             for (int i = 0; i < 12; i++)
             {
-                Vector3 color = MyMath.rng3D();
-                if (color.Length < 1.0) color.Normalize();
-                color = new Vector3(1.0f, 0.5f, 0.5f);
                 Entity circle2 = CreateEntity(
                     new PositionComponent(new Vector2(0, 950) + new Vector2(50, 0) * i),
                     new CircleComponent(45),
@@ -124,9 +129,6 @@ namespace Dino_Engine.ECS.ECS_Architecture
 
             for (int i = 0; i < 20; i++)
             {
-                Vector3 color = MyMath.rng3D();
-                if (color.Length < 1.0) color.Normalize();
-                color = new Vector3(1.0f, 0.5f, 0.5f);
                 Entity circle2 = CreateEntity(
                     new PositionComponent(new Vector2(0, 0) + new Vector2(0, 50) * i),
                     new CircleComponent(45),
@@ -138,9 +140,6 @@ namespace Dino_Engine.ECS.ECS_Architecture
             }
             for (int i = 0; i < 20; i++)
             {
-                Vector3 color = MyMath.rng3D();
-                if (color.Length < 1.0) color.Normalize();
-                color = new Vector3(1.0f, 0.5f, 0.5f);
                 Entity circle2 = CreateEntity(
                     new PositionComponent(new Vector2(550, 0) + new Vector2(0, 50) * i),
                     new CircleComponent(45),

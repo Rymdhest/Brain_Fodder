@@ -3,10 +3,10 @@ using OpenTK.Mathematics;
 
 namespace Dino_Engine.ECS.Components
 {
-    public struct collidableTag : IComponent
+    public struct KillableTag : IComponent
     {
 
-        public collidableTag()
+        public KillableTag()
         {
         }
 
