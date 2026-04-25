@@ -7,7 +7,7 @@ uniform vec3 color;
 uniform float radius;
 
 void main(void) {
-    float softness = 2.0;
+    float softness = 4.0;
 
     float dist = length(v_LocalPos);
     float d = dist - 0.5;

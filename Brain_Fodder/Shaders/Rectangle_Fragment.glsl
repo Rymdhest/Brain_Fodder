@@ -8,7 +8,7 @@ uniform vec3 color;
 
 void main(void)
 {
-    float softness = 2.0;
+    float softness = 4.0;
 vec2 d = abs(v_LocalPos) - vec2(0.5);
     float dist = max(d.x, d.y);
 

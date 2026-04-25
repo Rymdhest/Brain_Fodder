@@ -1,84 +1,116 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 public sealed class VideoRecorder : IDisposable
 {
-    private Process? _ffmpeg;
-    private BinaryWriter? _videoWriter;
-    private Task? _stderrTask;
+    private FileStream? _rawVideoStream;
+    private int _width;
+    private int _height;
+    private int _fps;
+    private string _rawVideoPath;
 
     private volatile bool _stopping;
+    private Task? _writeTask;
+    private System.Collections.Concurrent.ConcurrentQueue<byte[]>? _frameQueue;
+    private CancellationTokenSource? _cancellationTokenSource;
+    private object _queueLock = new object();
+    private int _queueSize = 0;
 
-    public bool IsRunning => _ffmpeg != null && !_ffmpeg.HasExited;
+    public bool IsRunning => _rawVideoStream != null && _rawVideoStream.CanWrite;
 
     public void Start(int width, int height, int fps, string rawVideoPath)
     {
-        if (_ffmpeg != null)
+        if (_rawVideoStream != null)
             throw new InvalidOperationException("VideoRecorder already started.");
 
         _stopping = false;
+        _width = width;
+        _height = height;
+        _fps = fps;
+        _rawVideoPath = rawVideoPath;
 
-        // Use a List for arguments to prevent spacing/parsing errors
-        var args = new[]
+        // Create directory if it doesn't exist
+        var directory = Path.GetDirectoryName(rawVideoPath);
+        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
         {
-        "-y",
-        "-hide_banner", "-loglevel", "info",
-        "-f", "rawvideo", "-pixel_format", "rgba", "-video_size", $"{width}x{height}", "-framerate", $"{fps.ToString()}", "-i", "-",
-        "-vf", "vflip",
-        "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", "-pix_fmt", "yuv420p",
-        $"\"{rawVideoPath}\""
-    };
+            Directory.CreateDirectory(directory);
+        }
 
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = "ffmpeg",
-            Arguments = string.Join(" ", args),
-            UseShellExecute = false,
-            CreateNoWindow = false, // Keep false for now to see errors
-            RedirectStandardInput = true,
-            RedirectStandardError = true,
-            RedirectStandardOutput = true,
-            WorkingDirectory = Path.GetDirectoryName(rawVideoPath) ?? "."
-        };
+        // Write raw RGBA frames directly to file
+        _rawVideoStream = new FileStream(
+            rawVideoPath,
+            FileMode.Create,
+            FileAccess.Write,
+            FileShare.None,
+            4 * 1024 * 1024,
+            FileOptions.SequentialScan
+        );
 
-        _ffmpeg = new Process { StartInfo = startInfo };
-
-        // 1. Hook up the event handler
-        _ffmpeg.ErrorDataReceived += (s, e) =>
-        {
-            if (!string.IsNullOrEmpty(e.Data))
-                Console.WriteLine($"FFMPEG ERROR: {e.Data}");
-        };
-
-        // 2. Start the process FIRST
-        if (!_ffmpeg.Start())
-            throw new InvalidOperationException("Failed to start FFmpeg.");
-
-        // 3. Begin reading ONLY after Start()
-        _ffmpeg.BeginErrorReadLine();
-
-        // Note: Removed the _stderrTask entirely as it conflicts with ErrorDataReceived
-
-        // 4. Set up stdin writer
-        _videoWriter = new BinaryWriter(_ffmpeg.StandardInput.BaseStream);
+        _frameQueue = new System.Collections.Concurrent.ConcurrentQueue<byte[]>();
+        _cancellationTokenSource = new CancellationTokenSource();
+        _writeTask = Task.Run(() => WriteFramesAsync(_cancellationTokenSource.Token));
     }
 
     public void WriteFrame(byte[] frameData)
     {
-        if (_stopping)
+        if (_stopping || _frameQueue == null || frameData == null)
             return;
 
         try
         {
-            _videoWriter?.Write(frameData);
-            _videoWriter?.Flush();
+            // Queue the frame - don't copy, pass reference directly
+            _frameQueue.Enqueue(frameData);
+
+            lock (_queueLock)
+            {
+                _queueSize++;
+            }
         }
-        catch
+        catch (Exception ex)
         {
-            // If writing fails, schedule a clean stop
+            Console.WriteLine($"Error queueing frame: {ex.Message}");
             Stop();
+        }
+    }
+
+    private async Task WriteFramesAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                if (_frameQueue != null && _frameQueue.TryDequeue(out var frameData))
+                {
+                    if (frameData != null)
+                    {
+                        try
+                        {
+                            _rawVideoStream?.Write(frameData, 0, frameData.Length);
+
+                            lock (_queueLock)
+                            {
+                                _queueSize--;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Error writing frame: {ex.Message}");
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    // Small sleep when queue is empty
+                    await Task.Delay(1, cancellationToken);
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected on shutdown
         }
     }
 
@@ -89,49 +121,40 @@ public sealed class VideoRecorder : IDisposable
 
         _stopping = true;
 
-        // 1. Close the writer (signal EOF to FFmpeg)
+        // Signal write task to stop
         try
         {
-            _videoWriter?.Dispose();
-            _videoWriter = null;
+            _cancellationTokenSource?.Cancel();
         }
         catch
         {
         }
 
-        // 2. Wait up to 5 seconds for FFmpeg to exit cleanly
-        if (_ffmpeg != null && !_ffmpeg.HasExited)
-        {
-            try
-            {
-                if (!_ffmpeg.WaitForExit(5000))
-                {
-                    // If it still refuses to exit, kill it
-                    try
-                    {
-                        _ffmpeg.Kill();
-                    }
-                    catch
-                    {
-                    }
-                }
-            }
-            catch
-            {
-            }
-        }
-
-        // 3. Dispose FFmpeg and stderr task
+        // Wait for remaining frames to be written (up to 30 seconds)
         try
         {
-            _ffmpeg?.Dispose();
-            _ffmpeg = null;
+            if (!_writeTask?.Wait(30000) ?? false)
+            {
+                Console.WriteLine("Warning: Write task did not complete in time");
+            }
         }
         catch
         {
         }
 
-        _stderrTask = null;
+        // Close file
+        try
+        {
+            _rawVideoStream?.Flush();
+            _rawVideoStream?.Dispose();
+            _rawVideoStream = null;
+        }
+        catch
+        {
+        }
+
+        _cancellationTokenSource?.Dispose();
+        _cancellationTokenSource = null;
     }
 
     public void Dispose() => Stop();

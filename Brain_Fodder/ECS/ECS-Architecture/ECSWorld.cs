@@ -40,7 +40,7 @@ namespace Dino_Engine.ECS.ECS_Architecture
 
             Entity spawner = CreateEntity(
                 new SpawnerComponent(),
-                new PositionComponent(250, -50)
+                new PositionComponent(250, 200)
                 );
 
 
@@ -104,7 +104,7 @@ namespace Dino_Engine.ECS.ECS_Architecture
             Vector3 color = MyMath.rng3D();
             if (color.Length < 1.0) color.Normalize();
 
-            for (int i = 0; i < 0; i++)
+            for (int i = 0; i < 12; i++)
             {
                 Entity circle2 = CreateEntity(
                     new PositionComponent(new Vector2(50, 0) * i),
@@ -275,8 +275,8 @@ namespace Dino_Engine.ECS.ECS_Architecture
         {
             if (!entityLocations.TryGetValue(entity.Id, out var location))
             {
-                throw new InvalidOperationException("trying to destroy an entity that is not in enityLocations");
-                //continue;
+                Console.WriteLine("trying to destroy an entity that is not in enityLocations");
+                return;
             }
 
             var (archetype, index) = location;

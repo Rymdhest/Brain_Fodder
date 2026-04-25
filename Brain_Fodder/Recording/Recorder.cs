@@ -15,6 +15,9 @@ namespace Brain_Fodder.Recording
         private string rawVideoPath;
         private string rawAudioPath;
         private string FinalPath;
+        private int _recordingWidth;
+        private int _recordingHeight;
+        private int _recordingFps;
 
         public Recorder()
         {
@@ -28,8 +31,24 @@ namespace Brain_Fodder.Recording
 
         public void StartRecording(Vector2i resolution, int frameRate)
         {
+            if (File.Exists(rawVideoPath))
+            {
+                File.Delete(rawVideoPath);
+            }
+            if (File.Exists(rawAudioPath))
+            {
+                File.Delete(rawAudioPath);
+            }
+
+            _recordingWidth = resolution.X;
+            _recordingHeight = resolution.Y;
+            _recordingFps = frameRate;
+
             _videoRecorder = new VideoRecorder();
             _videoRecorder.Start(resolution.X, resolution.Y, frameRate, rawVideoPath);
+
+            // Start audio recording AFTER video with a small delay to ensure sync
+            System.Threading.Thread.Sleep(100);
 
             _audioRecorder = new AudioRecorder();
             _audioRecorder.Start(rawAudioPath);
@@ -58,7 +77,10 @@ namespace Brain_Fodder.Recording
                 FFmpegMuxer.CombineVideoAndAudio(
                     rawVideoPath,
                     rawAudioPath,
-                    FinalPath
+                    FinalPath,
+                    _recordingWidth,
+                    _recordingHeight,
+                    _recordingFps
                 );
             }
         }
