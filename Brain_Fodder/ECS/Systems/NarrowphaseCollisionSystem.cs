@@ -41,6 +41,62 @@ namespace Dino_Engine.ECS.Systems
                 {
                     CheckCircleVsRect(entityB, entityA, buffer);
                 }
+                else if (entityA.Has<CircleComponent>() && entityB.Has<RingComponent>())
+                {
+                    CheckCircleVsRing(entityA, entityB, buffer);
+                }
+                else if (entityA.Has<RingComponent>() && entityB.Has<CircleComponent>())
+                {
+                    CheckCircleVsRing(entityB, entityA, buffer);
+                }
+            }
+        }
+
+        private void CheckCircleVsRing(EntityView circEnt, EntityView ringEnt, CollisionBufferComponent buffer)
+        {
+            Vector2 circPos = circEnt.Get<PositionComponent>().value;
+            float circRadius = circEnt.Get<CircleComponent>().radius;
+
+            Vector2 ringPos = ringEnt.Get<PositionComponent>().value;
+            float ringOuterRadius = ringEnt.Get<RingComponent>().radius + ringEnt.Get<RingComponent>().width * 0.5f;
+            float ringInnerRadius = ringEnt.Get<RingComponent>().radius - ringEnt.Get<RingComponent>().width * 0.5f;
+
+            Vector2 delta = circPos - ringPos;
+            float distanceSq = delta.LengthSquared;
+            float distance = MathF.Sqrt(distanceSq);
+
+            // Check if circle overlaps with the ring (between inner and outer radius)
+            float minDist = ringInnerRadius - circRadius;
+            float maxDist = ringOuterRadius + circRadius;
+
+            if (distance >= minDist && distance <= maxDist)
+            {
+                Vector2 normal = (distance != 0) ? delta / distance : new Vector2(1, 0);
+
+                // Determine which boundary the circle is closest to
+                float distToOuter = ringOuterRadius - distance;
+                float distToInner = distance - ringInnerRadius;
+
+                float penetration;
+                if (distToOuter < distToInner)
+                {
+                    // Collision with outer edge
+                    penetration = distToOuter + circRadius;
+                }
+                else
+                {
+                    // Collision with inner edge
+                    normal = -normal;
+                    penetration = distToInner + circRadius;
+                }
+
+                buffer.Manifolds.Add(new CollisionManifold
+                {
+                    EntityA = circEnt.Entity,
+                    EntityB = ringEnt.Entity,
+                    Normal = normal,
+                    Penetration = penetration
+                });
             }
         }
 

@@ -1,24 +1,27 @@
 #version 330
-
-in vec2 uv;
 layout (location = 0) out vec4 out_Colour;
-uniform vec2 center;
+in vec2 v_LocalPos;
+
 uniform vec3 color;
-uniform float radius;
 uniform float width;
 
-void main(void){
-	float dist = distance(gl_FragCoord.xy, center);
+void main(void) {
+    float softness = 4.0;
+    float dist = length(v_LocalPos);
+    float R = 0.5; // Outer radius matches quad size
+    
+    // 1. Convert pixel thickness to coordinate space
+    float px = fwidth(dist);
+    float W = width * px;
+    
+    // 2. SDF Math: max(outside_outer_edge, inside_inner_edge)
+    float d = max(dist - R, (R - W) - dist);
+    
+    // 3. Apply softness to the transition
+    // By multiplying px by softness, we define how many pixels wide the edge gradient is
+    float alpha = 1.0 - smoothstep(-0.5 * px * softness, 0.5 * px * softness, d);
 
-	vec3 red = vec3(1, 0 ,0);
-	vec3 blue = vec3(0, 0 ,1);
+    if (alpha <= 0.0) discard;
 
-	if (dist >= radius-width/2.0 && dist <= radius) {
-		out_Colour = vec4(color, smoothstep(radius-width/2.0f,radius, dist));
-	} else if (dist >= radius && dist <= radius+width/2.0f){
-		out_Colour = vec4(color, smoothstep(radius+width/2.0f,radius, dist));
-	} else {
-		//discard;
-		out_Colour = vec4(0,0,1.0, 1);
-	}
+    out_Colour = vec4(color, alpha);
 }

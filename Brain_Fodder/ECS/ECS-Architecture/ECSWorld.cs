@@ -43,6 +43,14 @@ namespace Dino_Engine.ECS.ECS_Architecture
                 new PositionComponent(250, 200)
                 );
 
+            Entity ring = CreateEntity(
+                new PositionComponent(new Vector2(300, 700)),
+                new RingComponent(300, 15),
+                new VelocityComponent(MyMath.rng2DMinusPlus() * 0.0f),
+                new ColourComponent(new Vector3(1.0f ,0.0f, 0.0f)),
+                new collidableTag(),
+                new PhysicsComponent(0, 1)
+            );
 
             for (int i = 0; i < 1; i++)
             {
@@ -52,6 +60,7 @@ namespace Dino_Engine.ECS.ECS_Architecture
 
                 Entity circle2 = CreateEntity(
                     new PositionComponent(new Vector2(100, 800) + MyMath.rng2D() * new Vector2(400, 100)),
+                    //new RingComponent(20, 5),
                     new CircleComponent(20),
                     new VelocityComponent(MyMath.rng2DMinusPlus() * 0),
                     new ColourComponent(color3),

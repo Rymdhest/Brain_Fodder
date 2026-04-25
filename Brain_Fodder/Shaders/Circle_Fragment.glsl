@@ -4,7 +4,6 @@ layout (location = 0) out vec4 out_Colour;
 
 in vec2 v_LocalPos;
 uniform vec3 color;
-uniform float radius;
 
 void main(void) {
     float softness = 4.0;
