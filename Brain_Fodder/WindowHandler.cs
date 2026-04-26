@@ -43,6 +43,11 @@ namespace SpaceEngine.RenderEngine
             frameStopWatch.Start();
         }
 
+        public void close()
+        {
+            gameWindow?.Close();
+        }
+
         public static Vector2i getCenter()
         {
             return new Vector2i(gameWindow.ClientSize.X / 2, gameWindow.ClientSize.Y / 2);

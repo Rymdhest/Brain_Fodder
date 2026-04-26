@@ -34,21 +34,30 @@ namespace Dino_Engine.ECS.ECS_Architecture
         {
             RegisterSingleton<CollisionBufferComponent>(CreateEntity(new CollisionBufferComponent()));
             RegisterSingleton<ConfigComponent>(CreateEntity(new ConfigComponent()));
-            RegisterSingleton<ConfigComponent>(CreateEntity(new ConfigComponent()));
+            RegisterSingleton<GameStateComponent>(CreateEntity(new GameStateComponent()));
             ApplyDeferredCommands();
 
             Vector2 center = Engine.Instance.outerResolution / 2;
 
 
             Entity spawner = CreateEntity(
-                new SpawnerComponent(0.4f),
+                new SpawnerComponent(0.2f),
                 new PositionComponent(center)
                 );
+
+            Entity goal = CreateEntity(
+            new PositionComponent(center),
+            new RingComponent(1080 / 2f, 10),
+            //new ColourComponent(new Vector3(1.0f, 0.0f, 0.5f)),
+            new collidableTag(),
+            new VelocityComponent(new Vector2(0f, 0f)),
+            new GoalTag()
+        );
 
             Vector3 color = MyMath.rng3D();
             if (color.Length < 1.0) color.Normalize();
 
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 2; i++)
             {
                 Vector3 color3 = MyMath.rng3D();
                 if (color3.Length < 1.0) color3.Normalize();
@@ -65,7 +74,8 @@ namespace Dino_Engine.ECS.ECS_Architecture
                     new PhysicsComponent(1, 1.05f),
                     new GravityTag(),
                     new CollisionSound(),
-                    new KillerTag()
+                    new KillerTag(),
+                    new ScorerTag()
                 );
             }
             for (int i = 0; i < 0; i++)
@@ -125,6 +135,9 @@ namespace Dino_Engine.ECS.ECS_Architecture
             SystemRegistry.UpdateAll(this, deltaTime);
 
             ApplyDeferredCommands();
+
+
+            //Console.WriteLine(GetEntityView( GetSingleton<GameStateComponent>()).Get<GameStateComponent>().score);
         }
 
         public void OnResize(ResizeEventArgs args)

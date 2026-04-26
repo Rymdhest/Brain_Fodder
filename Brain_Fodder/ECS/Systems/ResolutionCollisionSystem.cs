@@ -33,7 +33,7 @@ namespace Dino_Engine.ECS.Systems
 
                 EntityView viewA = world.GetEntityView(manifold.EntityA);
                 EntityView viewB = world.GetEntityView(manifold.EntityB);
-
+                if (!(viewA.Has<PhysicsComponent>() && viewB.Has<PhysicsComponent>()) ) continue;
                 var physA = viewA.Get<PhysicsComponent>();
                 var physB = viewB.Get<PhysicsComponent>();
 

@@ -9,7 +9,7 @@ namespace Dino_Engine.ECS.Systems
     {
         public NarrowphaseCollisionSystem() : base(new BitMask())
         {
-            Priority = 6;
+            Priority = -4;
         }
 
         public override void Update(ECSWorld world, float deltaTime)

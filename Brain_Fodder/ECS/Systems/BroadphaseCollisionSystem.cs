@@ -15,7 +15,7 @@ namespace Dino_Engine.ECS.Systems
         public BroadphaseCollisionSystem()
             : base(new BitMask(typeof(PositionComponent), typeof(collidableTag)))
         {
-            Priority = 5;
+            Priority = -5;
         }
 
 
@@ -47,8 +47,10 @@ namespace Dino_Engine.ECS.Systems
                     var entityB = allCollidables[j];
 
                     // OPTIMIZATION: Skip if both are static (walls hitting walls)
-                    bool isAStatic = entityA.Get<PhysicsComponent>().InvMass == 0;
-                    bool isBStatic = entityB.Get<PhysicsComponent>().InvMass == 0;
+                    bool isAStatic = false;
+                    bool isBStatic = false;
+                    if (entityA.Has<PhysicsComponent>()) isAStatic = entityA.Get<PhysicsComponent>().InvMass == 0;
+                    if (entityB.Has<PhysicsComponent>()) isBStatic = entityB.Get<PhysicsComponent>().InvMass == 0;
                     if (isAStatic && isBStatic) continue;
 
                     // Forward the pair to the Narrowphase

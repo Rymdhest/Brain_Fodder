@@ -36,6 +36,10 @@ namespace Dino_Engine.ECS.Systems
 
         private void SpawnEntity(ECSWorld world, SpawnerComponent spawner, PositionComponent position)
         {
+            if (world.GetEntityView(world.GetSingleton<GameStateComponent>()).Get<GameStateComponent>().IsVictory ) {
+                return;
+            }
+
             // Create a new entity
             /*
             Entity newEntity = world.CreateEntity(
@@ -49,6 +53,7 @@ namespace Dino_Engine.ECS.Systems
                     new KillableTag()
                 );
             */
+            
             Entity newEntity = world.CreateEntity(
                 new PositionComponent(position.value),
                 new RingComponent(1080/4f, 10),
@@ -56,9 +61,10 @@ namespace Dino_Engine.ECS.Systems
                 new collidableTag(),
                 new PhysicsComponent(0.0f, 1.05f),
                 new VelocityComponent(new Vector2(0f, 0f)),
-                new SizeChangerComponent(-80),
+                new SizeChangerComponent(-90),
                 new KillableTag()
             );
+            
         }
     }
 }

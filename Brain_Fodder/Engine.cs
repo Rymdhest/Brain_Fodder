@@ -6,6 +6,7 @@ using Dino_Engine.Rendering;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
+using OpenTK.Windowing.Desktop;
 using SpaceEngine.RenderEngine;
 using System.Diagnostics;
 using System.Text;
@@ -99,6 +100,22 @@ namespace Brain_Fodder
         }
         private void update(float delta)
         {
+            if (ecsWorld.GetEntityView(ecsWorld.GetSingleton<GameStateComponent>()).Get<GameStateComponent>().shouldReset)
+            {
+                recorder.StopRecording();
+                ecsWorld.clearLevel();
+                ecsWorld.SpawnLevel();
+                recorder.StartRecording(innerResolution, 60);
+
+            }
+            if (ecsWorld.GetEntityView(ecsWorld.GetSingleton<GameStateComponent>()).Get<GameStateComponent>().shouldSaveVideo)
+            {
+                recorder.StopRecording();
+            }
+            if (ecsWorld.GetEntityView(ecsWorld.GetSingleton<GameStateComponent>()).Get<GameStateComponent>().shouldClose)
+            {
+                windowHandler.close();
+            }
             EngineDeltaClock += delta;
             windowHandler.update(delta);
             ecsWorld.Update(delta);

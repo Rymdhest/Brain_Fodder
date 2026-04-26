@@ -32,7 +32,7 @@ namespace Dino_Engine.ECS.Systems
             if (WindowHandler.getTotalTime() - soundComponent.timeLastPlayed < soundComponent.cooldownSeconds) return;
             if (manifold.Impulse < soundComponent.minImpulse) return;
 
-            Console.WriteLine($"Playing collision sound with impulse {manifold.Impulse}");
+            //Console.WriteLine($"Playing collision sound with impulse {manifold.Impulse}");
 
 
 
