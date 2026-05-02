@@ -16,7 +16,7 @@ namespace Brain_Fodder
     public class Engine
     {
         SoundManager soundManager;
-        WindowHandler windowHandler;
+        public WindowHandler windowHandler;
         MasterRenderer masterRenderer;
         public ECSWorld ecsWorld;
         private static Engine? _instance;
@@ -100,6 +100,7 @@ namespace Brain_Fodder
         }
         private void update(float delta)
         {
+            soundManager.Update(delta);
             if (ecsWorld.GetEntityView(ecsWorld.GetSingleton<GameStateComponent>()).Get<GameStateComponent>().shouldReset)
             {
                 recorder.StopRecording();

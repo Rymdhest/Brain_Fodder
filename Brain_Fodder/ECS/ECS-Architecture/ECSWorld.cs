@@ -1,5 +1,6 @@
 ﻿using Brain_Fodder;
 using Dino_Engine.ECS.Components;
+using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using SpaceEngine.Util;
@@ -37,48 +38,115 @@ namespace Dino_Engine.ECS.ECS_Architecture
             RegisterSingleton<GameStateComponent>(CreateEntity(new GameStateComponent()));
             ApplyDeferredCommands();
 
+
+
+            spawnObsticleLevel();
+            //spawnCircleLevel();
+
+        }
+
+        private void spawnBorder(bool left = true, bool right = true, bool top = true, bool bot = true)
+        {
             Vector2 center = Engine.Instance.outerResolution / 2;
-
-
-            Entity spawner = CreateEntity(
-                new SpawnerComponent(0.2f),
-                new PositionComponent(center)
-                );
-
-            Entity goal = CreateEntity(
-            new PositionComponent(center),
-            new RingComponent(1080 / 2f, 10),
-            //new ColourComponent(new Vector3(1.0f, 0.0f, 0.5f)),
-            new collidableTag(),
-            new VelocityComponent(new Vector2(0f, 0f)),
-            new GoalTag()
-        );
+            Vector2 size = Engine.Instance.outerResolution;
+            float width = 50f;
 
             Vector3 color = MyMath.rng3D();
             if (color.Length < 1.0) color.Normalize();
 
-            for (int i = 0; i < 2; i++)
+
+            if (left)
+            {
+                Entity l = CreateEntity(
+                    new PositionComponent(new Vector2(0, center.Y)),
+                    new RectangleComponent(new Vector2(width, size.Y), 0f),
+                    new ColourComponent(color),
+                    new collidableTag(),
+                    new VelocityComponent(new Vector2(0f, 0f)),
+                    new PhysicsComponent(0.0f, 1.0f)
+                );
+            }
+            if (right)
+            {
+                Entity r = CreateEntity(
+                    new PositionComponent(new Vector2(size.X, center.Y)),
+                    new RectangleComponent(new Vector2(width, size.Y), 0f),
+                    new ColourComponent(color),
+                    new collidableTag(),
+                    new VelocityComponent(new Vector2(0f, 0f)),
+                    new PhysicsComponent(0.0f, 1.0f)
+                );
+            }
+            if (top)
+            {
+                Entity t = CreateEntity(
+                    new PositionComponent(new Vector2(center.X, size.Y)),
+                    new RectangleComponent(new Vector2(size.X, width), 0f),
+                    new ColourComponent(color),
+                    new collidableTag(),
+                    new VelocityComponent(new Vector2(0f, 0f)),
+                    new PhysicsComponent(0.0f, 1.0f)
+                );
+            }
+            if (bot)
+            {
+                Entity b = CreateEntity(
+                    new PositionComponent(new Vector2(center.X, 0)),
+                    new RectangleComponent(new Vector2(size.X, width), 0f),
+                    new ColourComponent(color),
+                    new collidableTag(),
+                    new VelocityComponent(new Vector2(0f, 0f)),
+                    new PhysicsComponent(0.0f, 1.0f)
+                );
+            }
+        }
+
+        private void spawnObsticleLevel()
+        {
+            spawnBorder(bot:false);
+
+            Vector2 center = Engine.Instance.outerResolution / 2;
+            Vector2 size = Engine.Instance.outerResolution;
+
+            Entity goal = CreateEntity(
+                new PositionComponent(new Vector2(center.X, -50)),
+                new RectangleComponent(new Vector2(2000, 50), 0f),
+                //new ColourComponent(new Vector3(1.0f, 0.0f, 0.5f)),
+                new collidableTag(),
+                new VelocityComponent(new Vector2(0f, 0f)),
+                new GoalTag(),
+                new KillerTag()
+            );
+
+            Vector3 color = MyMath.rng3D();
+            if (color.Length < 1.0) color.Normalize();
+
+            for (int i = 0; i < 1; i++)
             {
                 Vector3 color3 = MyMath.rng3D();
                 if (color3.Length < 1.0) color3.Normalize();
                 color3 = new Vector3(0.5f, 1.0f, 0.5f);
 
                 Entity circle2 = CreateEntity(
-                    new PositionComponent(center),
+                    new PositionComponent(new Vector2(center.X, size.Y-50)),
                     //new RingComponent(20, 5),
-                    new CircleComponent(20),
-                    new VelocityComponent(MyMath.rng2DMinusPlus() * 0),
+                    new CircleComponent(25),
+                    new VelocityComponent(new Vector2(0, -200f)),
                     new ColourComponent(color3),
                     new collidableTag(),
-                    new SizeChangerComponent(2f),
-                    new PhysicsComponent(1, 1.05f),
-                    new GravityTag(),
+                    //new SizeChangerComponent(3f),
+                    new PhysicsComponent(1, 0.99f),
+                    new GravityComponent(700),
                     new CollisionSound(),
-                    new KillerTag(),
+                    new KillableTag(),
                     new ScorerTag()
                 );
             }
-            for (int i = 0; i < 0; i++)
+
+            Vector3 color2 = MyMath.rng3D();
+            color2 = MyMath.rng3D();
+            if (color2.Length < 1.0) color2.Normalize();
+            for (int i = 0; i < 16; i++)
             {
                 float spin = 0;
                 Vector2 osc = new Vector2(0f, 0f);
@@ -99,26 +167,70 @@ namespace Dino_Engine.ECS.ECS_Architecture
                         break;
                 }
 
+                //color2 = new Vector3(0.5f, 0.4f, 0.7f);
+                Vector2 pos = new Vector2(0, 0) + MyMath.rng2D() * size;
+                pos.Y = pos.Y*(1.0f-(200/size.Y));
+                pos.Y = pos.Y * (1.0f - (200 / size.Y)) + 200;
 
-
-                Vector3 color2 = MyMath.rng3D();
-                if (color2.Length < 1.0) color2.Normalize();
-                color2 = new Vector3(0.5f, 0.4f, 0.7f);
-                Vector2 pos = new Vector2(100, 100) + MyMath.rng2D() * new Vector2(400, 800);
                 Entity circle2 = CreateEntity(
                     new PositionComponent(pos),
-                    new RectangleComponent(new Vector2(100 + MyMath.rng() * 200, 10), 0),
+                    new RectangleComponent(new Vector2(100 + MyMath.rng() * 150, 10), MyMath.rng()*MathF.Tau),
                     new VelocityComponent(MyMath.rng2DMinusPlus() * 0.0f),
                     new ColourComponent(color2),
                     new collidableTag(),
                     new SpinComponent(spin),
                     new PhysicsComponent(0.0f, 1),
-                    new OscillatorComponent(pos, pos + osc)
+                    new GravityComponent(0f),
+                    new GravityOnVictoryTag()
+                    //new OscillatorComponent(pos, pos + osc)
                 );
             }
+        }
 
 
+        private void spawnCircleLevel()
+        {
+            Vector2 center = Engine.Instance.outerResolution / 2;
 
+
+            Entity spawner = CreateEntity(
+                new SpawnerComponent(0.3f),
+                new PositionComponent(center)
+                );
+
+            Entity goal = CreateEntity(
+                new PositionComponent(center),
+                new RingComponent(1080 / 2f, 10),
+                //new ColourComponent(new Vector3(1.0f, 0.0f, 0.5f)),
+                new collidableTag(),
+                new VelocityComponent(new Vector2(0f, 0f)),
+                new GoalTag()
+            );
+
+            Vector3 color = MyMath.rng3D();
+            if (color.Length < 1.0) color.Normalize();
+
+            for (int i = 0; i < 2; i++)
+            {
+                Vector3 color3 = MyMath.rng3D();
+                if (color3.Length < 1.0) color3.Normalize();
+                color3 = new Vector3(0.5f, 1.0f, 0.5f);
+
+                Entity circle2 = CreateEntity(
+                    new PositionComponent(center),
+                    //new RingComponent(20, 5),
+                    new CircleComponent(10),
+                    new VelocityComponent(new Vector2(0, -200f)),
+                    new ColourComponent(color3),
+                    new collidableTag(),
+                    new SizeChangerComponent(2f),
+                    new PhysicsComponent(1, 1.01f),
+                    new GravityComponent(700),
+                    new CollisionSound(),
+                    new KillerTag(),
+                    new ScorerTag()
+                );
+            }
         }
 
         public void ClearAllEntitiesExcept(params Entity[] exceptions)
@@ -248,7 +360,7 @@ namespace Dino_Engine.ECS.ECS_Architecture
         {
             if (!entityLocations.TryGetValue(entity.Id, out var location))
             {
-                Console.WriteLine("trying to destroy an entity that is not in enityLocations");
+                //Console.WriteLine("trying to destroy an entity that is not in enityLocations");
                 return;
             }
 

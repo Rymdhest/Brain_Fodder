@@ -35,8 +35,9 @@ namespace Dino_Engine.ECS.Systems
             //Console.WriteLine($"Playing collision sound with impulse {manifold.Impulse}");
 
 
+            SoundManager.OnBallBounce();
 
-            SoundManager.Play(SoundManager.GenerateSound((int)(manifold.Impulse/300)));
+            //SoundManager.Play(SoundManager.GenerateSound((int)(manifold.Impulse/200)));
             //SoundManager.Play(SoundManager.GenerateCelebrationSound());
 
             

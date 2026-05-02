@@ -61,7 +61,7 @@ namespace Dino_Engine.ECS.Systems
                 new collidableTag(),
                 new PhysicsComponent(0.0f, 1.05f),
                 new VelocityComponent(new Vector2(0f, 0f)),
-                new SizeChangerComponent(-90),
+                new SizeChangerComponent(-60),
                 new KillableTag()
             );
             

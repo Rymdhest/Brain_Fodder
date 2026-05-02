@@ -20,6 +20,8 @@ namespace Dino_Engine.ECS.Systems
             var gameState = world.GetEntityView(world.GetSingleton<GameStateComponent>()).Get<GameStateComponent>();
             var gameConfig = world.GetEntityView( world.GetSingleton<ConfigComponent>()).Get< ConfigComponent>();
 
+            gameState.LevelTime += deltaTime;
+
             if (gameState.IsVictory)
             {
                 gameState.VictoryTime += deltaTime;

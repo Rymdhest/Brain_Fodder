@@ -3,13 +3,12 @@ using OpenTK.Mathematics;
 
 namespace Dino_Engine.ECS.Components
 {
-    public struct GravityTag : IComponent
+    public struct GravityOnVictoryTag : IComponent
     {
 
-        public GravityTag()
+        public GravityOnVictoryTag()
         {
         }
-    }
 
-    
+    }
 }

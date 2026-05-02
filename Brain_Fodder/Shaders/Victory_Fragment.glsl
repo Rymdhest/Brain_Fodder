@@ -1,9 +1,12 @@
-//fireworks in heart shape
-//np = no. of particles
-//snp = no. of spawned particles
+#version 330
+layout (location = 0) out vec4 out_Colour;
+in vec2 v_LocalPos;
+
+uniform vec2 iResolution;
+uniform float iTime;
 
 #define rad(x) radians(x)
-#define np 20.
+#define np 10.
 #define snp 40.
 #define spawn 1
 #define trail 1
@@ -41,8 +44,10 @@ vec2 get_velocity(vec2 u, vec2 a, float t, float ang){
     return vec2(u.x*cos(ang), u.y*sin(ang)) + a*t;
 }
 
-void mainImage( out vec4 fragColor, in vec2 fragCoord )
+void main(void)
 {
+    vec2 fragCoord = v_LocalPos*iResolution;
+
     // Normalized pixel coordinates (from -1 to 1)
     vec2 uv = (2.*fragCoord-iResolution.xy)/iResolution.y;
     float aspect = iResolution.x/iResolution.y;
@@ -115,5 +120,5 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     vec3 night = vec3(0.06, 0.02, 0.18)*vec3(uv.y*0.5+0.5);
     col += night*(1.0-p1);
     //col = vec3(light(uv, vec2(0.0), 0.1));
-    fragColor = vec4(col,1.0);
+    out_Colour = vec4(col,1.0);
 }

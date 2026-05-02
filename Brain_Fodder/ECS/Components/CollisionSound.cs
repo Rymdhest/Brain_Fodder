@@ -8,9 +8,9 @@ namespace Dino_Engine.ECS.Components
     {
 
 
-        public float cooldownSeconds = 0.1f;
+        public float cooldownSeconds = 0.03f;
         public float timeLastPlayed = 0.0f;
-        public float minImpulse = 100.0f;
+        public float minImpulse = 30.0f;
 
         public CollisionSound()
         {

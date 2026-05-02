@@ -1,4 +1,5 @@
 ﻿using Brain_Fodder;
+using NAudio.Midi;
 using NAudio.Wave;
 
 class SoundManager
@@ -7,7 +8,22 @@ class SoundManager
 
     private static WaveOutEvent outputDevice = new WaveOutEvent();
     private static NAudio.Wave.SampleProviders.MixingSampleProvider mixer;
+    private static List<List<int>> currentSongChords;
+    private static readonly List<(string, int, int)> SongMelodyMap = new List<(string, int, int)>
 
+{
+    ("Avicii - ID (Levels)", 1, -1),
+    ("eminem-stan", 3, -1),
+    ("jingle-bells-keyboard", 1, 0),
+    ("kalinka", 1, -1),
+    ("Mario Bros. - Super Mario Bros. Theme", 0, -1),
+    ("Zelda - Ocarina of Time - Lost Woods Theme", 1, -1),
+};
+    private static int currentSongShift = 0;
+    private static int noteIndex = 0;
+    private static float cooldownTimer = 0;
+    private static float COOLDOWN_DURATION = 0.1f;
+    
     public SoundManager()
     {
         var format = WaveFormat.CreateIeeeFloatWaveFormat(44100, 1);
@@ -17,6 +33,159 @@ class SoundManager
         };
         outputDevice.Init(mixer);
         outputDevice.Play();
+        var song = SongMelodyMap[5];
+        currentSongChords = SoundManager.LoadSong(song.Item1, song.Item2, song.Item3);
+    }
+
+    public static List<List<int>> LoadSong(string fileName, int targetTrack, int shift)
+    {
+        currentSongShift = shift;
+        var songData = new List<List<int>>();
+        var midiFile = new NAudio.Midi.MidiFile("MIDI\\" + fileName+".mid", false);
+
+        // --- NEW: SCAN ALL TRACKS ---
+        Console.WriteLine($"\n--- MIDI Analysis: {fileName} ---");
+        for (int i = 0; i < midiFile.Tracks; i++)
+        {
+            int noteCount = 0;
+            string trackName = "Unnamed";
+
+            foreach (var midiEvent in midiFile.Events[i])
+            {
+                // Count actual notes
+                if (midiEvent is NAudio.Midi.NoteOnEvent n && n.Velocity > 0)
+                    noteCount++;
+
+                // Extract track name if available
+                if (midiEvent is NAudio.Midi.TextEvent te && te.MetaEventType == NAudio.Midi.MetaEventType.SequenceTrackName)
+                {
+                    trackName = te.Text;
+                }
+            }
+
+            // Color-code the targeted track in the console for clarity
+            string indicator = (i == targetTrack) ? " >> SELECTED <<" : "";
+            if (noteCount > 0 || i == targetTrack)
+            {
+                Console.WriteLine($"Track {i}: {trackName} ({noteCount} notes){indicator}");
+            }
+        }
+        Console.WriteLine("------------------------------------------\n");
+        // ----------------------------
+
+        // Check if the track exists
+        if (targetTrack >= midiFile.Tracks) targetTrack = 0;
+
+        var groups = new SortedDictionary<long, List<int>>();
+        var melodyEvents = midiFile.Events[targetTrack];
+
+        foreach (var midiEvent in melodyEvents)
+        {
+            if (midiEvent is NAudio.Midi.NoteOnEvent noteOn && noteOn.Velocity > 0)
+            {
+                // Quantize to merge fast flurries
+                long quantizedTime = (noteOn.AbsoluteTime / 10) * 10;
+
+                if (!groups.ContainsKey(quantizedTime))
+                    groups[quantizedTime] = new List<int>();
+
+                groups[quantizedTime].Add(noteOn.NoteNumber);
+            }
+        }
+
+        int lastNote = -1;
+        foreach (var group in groups.Values)
+        {
+            int currentHighest = group.Max();
+
+            // REMOVE OR COMMENT OUT THIS IF STATEMENT:
+            // if (currentHighest != lastNote) 
+            // {
+            songData.Add(group);
+            lastNote = currentHighest;
+            // }
+        }
+
+        // This shows the count AFTER filtering/quantizing
+        Console.WriteLine($"Loaded Track {targetTrack}: Resulted in {songData.Count} unique bounce events.");
+        return songData;
+    }
+
+    public void Update(float deltaTime)
+    {
+        if (cooldownTimer > 0)
+        {
+            cooldownTimer -= deltaTime;
+        }
+    }
+
+    public static void OnBallBounce()
+    {
+
+        if (cooldownTimer > 0) return;
+        if (currentSongChords == null || currentSongChords.Count == 0) return;
+
+        cooldownTimer = COOLDOWN_DURATION;
+        if (noteIndex >= currentSongChords.Count) noteIndex = 0;
+
+        // --- CHANGE IS HERE ---
+        // Instead of taking the whole list, we only take the HIGHEST note.
+        // In MIDI, the highest number is the highest pitch (the melody).
+        int highestNote = currentSongChords[noteIndex].Max()+12* currentSongShift;
+        List<int> melodyNoteOnly = new List<int> { highestNote };
+        // -----------------------
+
+        // Update your print to show the single note
+        string[] noteNames = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+        Console.WriteLine($"[Bounce {noteIndex}] Lead Note: {noteNames[highestNote % 12]}{(highestNote / 12) - 1}");
+
+        // Generate and Play
+        short[] audio = SoundManager.GenerateChordSound(melodyNoteOnly);
+        SoundManager.Play(audio);
+
+        noteIndex = (noteIndex + 1) % currentSongChords.Count;
+    }
+
+    public static short[] GenerateChordSound(List<int> notes)
+    {
+        int sampleRate = 44100;
+        double duration = 0.5; // Short duration for a snappy "plink" sound
+        int totalSamples = (int)(sampleRate * duration);
+        float[] mixBuffer = new float[totalSamples];
+
+        foreach (int midiNote in notes)
+        {
+            double freq = GetFrequency(midiNote);
+            double phaseStep = Math.Tau * freq / sampleRate;
+            double phase = 0;
+
+            for (int i = 0; i < totalSamples; i++)
+            {
+                double time = (double)i / sampleRate;
+                phase += phaseStep;
+
+                // Synthesis: Reduced Fundamental (0.3) + High Octaves for "Sparkle"
+                // This prevents the "boomy" bass feel.
+                double sample = (Math.Sin(phase) * 0.3) +
+                               (Math.Sin(phase * 2.0) * 0.7) +
+                               (Math.Sin(phase * 4.0) * 0.4);
+
+                // Snappy Envelope: Fast Attack, very fast Exponential Decay (-12.0)
+                double attack = Math.Min(1.0, time / 0.005);
+                double envelope = attack * Math.Exp(-12.0 * time);
+
+                // Mix into buffer (normalized by note count to prevent clipping)
+                mixBuffer[i] += (float)(sample * envelope * (0.5 / notes.Count));
+            }
+        }
+
+        // Convert mixed float buffer to 16-bit PCM (Short)
+        short[] audioData = new short[totalSamples];
+        for (int i = 0; i < totalSamples; i++)
+        {
+            audioData[i] = (short)(Math.Clamp(mixBuffer[i], -1.0f, 1.0f) * short.MaxValue);
+        }
+        return audioData;
     }
 
     public static void Play(short[] soundData)

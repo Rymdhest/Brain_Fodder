@@ -8,7 +8,7 @@ using OpenTK.Input;
 using OpenTK.Audio.OpenAL;
 namespace SpaceEngine.RenderEngine
 {
-    internal class WindowHandler
+    public class WindowHandler
     {
         private string title = "Brain Fodder";
         public static GameWindow? gameWindow = null;
@@ -65,6 +65,7 @@ namespace SpaceEngine.RenderEngine
         public void update(float delta)
         {
             this.delta = (float)frameStopWatch.Elapsed.TotalSeconds;
+            this.delta = delta;
             totalTime += this.delta;
             frameStopWatch.Restart();
 

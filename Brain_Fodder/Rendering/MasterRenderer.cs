@@ -1,5 +1,6 @@
 ﻿
 using Brain_Fodder;
+using Dino_Engine.ECS.Components;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
@@ -37,7 +38,9 @@ namespace Brain_Fodder.Rendering
         public static ShaderProgram rectangleShader = new ShaderProgram("Simple_Vertex", "Rectangle_Fragment");
         public static ShaderProgram circleShader = new ShaderProgram("Simple_Vertex", "Circle_Fragment");
         public static ShaderProgram RingShader = new ShaderProgram("Simple_Vertex", "Ring_Fragment");
+        public static ShaderProgram VictoryShader = new ShaderProgram("Simple_Vertex", "Victory_Fragment");
         private glModel unitSquare;
+        private glModel fullScreenQuad;
         private glModel lineBase;
         private Matrix4 projection;
 
@@ -45,20 +48,6 @@ namespace Brain_Fodder.Rendering
         public static List<CircleRenderCommand> circles = new List<CircleRenderCommand>();
         public static List<RectangleRenderCommand> rectangles = new List<RectangleRenderCommand>();
 
-
-        class BouncyBall{
-            private Vector2 velocity;
-            private Circle model;
-
-            public BouncyBall(Vector2 center, Vector2 velocity, float radius)
-            {
-                Model = new Circle(center, radius);
-                this.Velocity = velocity;
-            }
-
-            public Vector2 Velocity { get => velocity; set => velocity = value; }
-            public Circle Model { get => model; set => model = value; }
-        }
 
         public MasterRenderer() {
             float[] positions = { -0.5f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f };
@@ -69,6 +58,10 @@ namespace Brain_Fodder.Rendering
             int[] indicesLine = { 0, 1, 2, 3, 0, 2 };
             lineBase = glLoader.loadToVAO(positionsLine, indicesLine);
 
+
+            float[] positionsFullScreen = { 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f };
+            int[] indicesFullScreen = { 0, 1, 2, 3, 0, 2 };
+            fullScreenQuad = glLoader.loadToVAO(positionsFullScreen, indicesFullScreen);
         }
 
 
@@ -99,7 +92,26 @@ namespace Brain_Fodder.Rendering
             rendercircles();
             renderRectangles();
 
+            renderVictory();
+
             finishFrame();
+        }
+        private void renderVictory()
+        {
+
+            GL.BlendFunc(BlendingFactor.One, BlendingFactor.One);
+
+            VictoryShader.bind();
+            VictoryShader.loadUniformMatrix4f("uProjection", projection);
+            VictoryShader.loadUniformVector2f("iResolution", Engine.Instance.outerResolution);
+            VictoryShader.loadUniformFloat("iTime", Engine.Instance.ecsWorld.GetEntityView( Engine.Instance.ecsWorld.GetSingleton<GameStateComponent>()).Get<GameStateComponent>().VictoryTime);
+            VictoryShader.loadUniformMatrix4f("modelMatrix", MyMath.createTransformationMatrix(new Vector2(0, 0), 0f, Engine.Instance.outerResolution));
+
+            glModel glmodel = fullScreenQuad;
+            GL.BindVertexArray(glmodel.getVAOID());
+            GL.EnableVertexAttribArray(0);
+            GL.DrawElements(PrimitiveType.Triangles, glmodel.getVertexCount(), DrawElementsType.UnsignedInt, 0);
+            VictoryShader.unBind();
         }
 
         private void renderRings()

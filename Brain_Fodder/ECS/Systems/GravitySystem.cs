@@ -1,4 +1,5 @@
 ﻿
+
 using Dino_Engine.ECS.Components;
 using Dino_Engine.ECS.ECS_Architecture;
 using System;
@@ -12,14 +13,14 @@ namespace Dino_Engine.ECS.Systems
     public class GravitySystem : SystemBase
     {
         public GravitySystem()
-            : base(new BitMask(typeof(GravityTag), typeof(VelocityComponent)))
+            : base(new BitMask(typeof(GravityComponent), typeof(VelocityComponent)))
         {
         }
         protected override void UpdateEntity(EntityView entity, ECSWorld world, float deltaTime)
         {
             var vel = entity.Get<VelocityComponent>();
 
-            vel.value -= new OpenTK.Mathematics.Vector2(0, 280) * deltaTime;
+            vel.value -= new OpenTK.Mathematics.Vector2(0, entity.Get<GravityComponent>().gravity) * deltaTime;
             entity.Set(vel);
         }
     }
