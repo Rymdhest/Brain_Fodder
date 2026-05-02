@@ -39,6 +39,7 @@ namespace Brain_Fodder.Rendering
         public static ShaderProgram circleShader = new ShaderProgram("Simple_Vertex", "Circle_Fragment");
         public static ShaderProgram RingShader = new ShaderProgram("Simple_Vertex", "Ring_Fragment");
         public static ShaderProgram VictoryShader = new ShaderProgram("Simple_Vertex", "Victory_Fragment");
+        public static ShaderProgram backGroundShader;
         private glModel unitSquare;
         private glModel fullScreenQuad;
         private glModel lineBase;
@@ -50,6 +51,19 @@ namespace Brain_Fodder.Rendering
 
 
         public MasterRenderer() {
+            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Hex_Fragment");
+            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Ocean_Fragment");
+            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Landscape_Fragment");
+            backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Stars_Fragment");
+            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Matrix_Fragment");
+            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Fish_Fragment");
+            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Snow_Fragment");
+            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_WinterLandscape_Fragment");
+            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Ravine_Fragment");
+            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Aurora_Fragment");
+            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Abstract_Fragment");
+
+
             float[] positions = { -0.5f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f };
             int[] indices = { 0, 1, 2, 3, 0, 2 };
             unitSquare = glLoader.loadToVAO(positions, indices);
@@ -88,6 +102,8 @@ namespace Brain_Fodder.Rendering
         {
             prepareFrame();
 
+            renderBackground();
+
             renderRings();
             rendercircles();
             renderRectangles();
@@ -96,6 +112,23 @@ namespace Brain_Fodder.Rendering
 
             finishFrame();
         }
+
+        private void renderBackground()
+        {
+
+            backGroundShader.bind();
+            backGroundShader.loadUniformMatrix4f("uProjection", projection);
+            backGroundShader.loadUniformVector2f("iResolution", Engine.Instance.outerResolution);
+            backGroundShader.loadUniformFloat("iTime", Engine.Instance.ecsWorld.GetEntityView(Engine.Instance.ecsWorld.GetSingleton<GameStateComponent>()).Get<GameStateComponent>().LevelTime);
+            backGroundShader.loadUniformMatrix4f("modelMatrix", MyMath.createTransformationMatrix(new Vector2(0, 0), 0f, Engine.Instance.outerResolution));
+
+            glModel glmodel = fullScreenQuad;
+            GL.BindVertexArray(glmodel.getVAOID());
+            GL.EnableVertexAttribArray(0);
+            GL.DrawElements(PrimitiveType.Triangles, glmodel.getVertexCount(), DrawElementsType.UnsignedInt, 0);
+            backGroundShader.unBind();
+        }
+
         private void renderVictory()
         {
 

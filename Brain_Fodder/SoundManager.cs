@@ -10,7 +10,7 @@ class SoundManager
     private static NAudio.Wave.SampleProviders.MixingSampleProvider mixer;
     private static List<List<int>> currentSongChords;
     private static readonly List<(string, int, int)> SongMelodyMap = new List<(string, int, int)>
-
+    
 {
     ("Avicii - ID (Levels)", 1, -1),
     ("eminem-stan", 3, -1),
@@ -18,6 +18,12 @@ class SoundManager
     ("kalinka", 1, -1),
     ("Mario Bros. - Super Mario Bros. Theme", 0, -1),
     ("Zelda - Ocarina of Time - Lost Woods Theme", 1, -1),
+    ("YoureBeautiful", 3, 0),
+    ("UndertaleMegalovania", 0, -1),
+    ("FinalCountdown", 2, 0),
+    ("Blue", 8  , 0),
+
+    
 };
     private static int currentSongShift = 0;
     private static int noteIndex = 0;
@@ -33,7 +39,7 @@ class SoundManager
         };
         outputDevice.Init(mixer);
         outputDevice.Play();
-        var song = SongMelodyMap[5];
+        var song = SongMelodyMap[10];
         currentSongChords = SoundManager.LoadSong(song.Item1, song.Item2, song.Item3);
     }
 

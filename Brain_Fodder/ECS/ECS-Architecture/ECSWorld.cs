@@ -40,8 +40,8 @@ namespace Dino_Engine.ECS.ECS_Architecture
 
 
 
-            spawnObsticleLevel();
-            //spawnCircleLevel();
+            //spawnObsticleLevel();
+            spawnCircleLevel();
 
         }
 

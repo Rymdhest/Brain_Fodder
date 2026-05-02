@@ -96,7 +96,7 @@ namespace Brain_Fodder
 
             recorder.StartRecording(innerResolution, 60);
 
-            WindowHandler.getWindow().Run();
+                WindowHandler.getWindow().Run();
         }
         private void update(float delta)
         {
