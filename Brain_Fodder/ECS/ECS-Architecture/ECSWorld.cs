@@ -41,10 +41,64 @@ namespace Dino_Engine.ECS.ECS_Architecture
 
 
             //spawnObsticleLevel();
-            spawnCircleLevel();
+            //spawnCircleLevel();
+            spawnCircleLevel2();
 
         }
+        private void spawnCircleLevel2()
+        {
+            Vector2 center = Engine.Instance.outerResolution / 2;
+            Entity newEntity = CreateEntity(
+                new PositionComponent(center+new Vector2(0, 100)),
+                new CircleComponent(10),
+                new ColourComponent(new Vector3(1.0f, 1.0f, 1.0f)),
+                new collidableTag(),
+                new PhysicsComponent(1.0f, 3.0f),
+                new VelocityComponent(MyMath.rng2DMinusPlus().Normalized() * 200f),
+                new GravityComponent(0f),
+                new KillableTag()
+            );
+            Entity border = CreateEntity(
+                new PositionComponent(center),
+                new RingComponent(1080 / 4f, 10),
+                new ColourComponent(new Vector3(0.4f, 0.4f, 0.55f)),
+                new collidableTag(),
+                new PhysicsComponent(0.0f, 0.95f),
+                new VelocityComponent(new Vector2(0f, 0f))
+            );
 
+            Entity goal = CreateEntity(
+                new PositionComponent(center),
+                new RingComponent(1080 / 2f, 10),
+                //new ColourComponent(new Vector3(1.0f, 0.0f, 0.5f)),
+                new collidableTag(),
+                new VelocityComponent(new Vector2(0f, 0f)),
+                new GoalTag()
+            );
+
+            Vector3 color = MyMath.rng3D();
+            if (color.Length < 1.0) color.Normalize();
+
+            for (int i = 0; i < 1; i++)
+            {
+                Vector3 color3 = MyMath.rng3D();
+                if (color3.Length < 1.0) color3.Normalize();
+                color3 = new Vector3(0.5f, 1.0f, 0.5f);
+
+                Entity circle2 = CreateEntity(
+                    new PositionComponent(center),
+                    new CircleComponent(30),
+                    new VelocityComponent(new Vector2(MyMath.rngMinusPlus()*150, -200f)),
+                    new ColourComponent(color3),
+                    new collidableTag(),
+                    new PhysicsComponent(1.0f, 1.05f),
+                    new GravityComponent(0),
+                    new CollisionSound(),
+                    new KillerTag(),
+                    new ScorerTag()
+                );
+            }
+        }
         private void spawnBorder(bool left = true, bool right = true, bool top = true, bool bot = true)
         {
             Vector2 center = Engine.Instance.outerResolution / 2;

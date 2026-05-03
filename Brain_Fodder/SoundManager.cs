@@ -20,7 +20,7 @@ class SoundManager
     ("Zelda - Ocarina of Time - Lost Woods Theme", 1, -1),
     ("YoureBeautiful", 3, 0),
     ("UndertaleMegalovania", 0, -1),
-    ("FinalCountdown", 2, 0),
+    ("FinalCountdown", 2, -1),
     ("Blue", 8  , 0),
 
     
@@ -28,7 +28,7 @@ class SoundManager
     private static int currentSongShift = 0;
     private static int noteIndex = 0;
     private static float cooldownTimer = 0;
-    private static float COOLDOWN_DURATION = 0.1f;
+    private static float COOLDOWN_DURATION = 0.075f;
     
     public SoundManager()
     {
@@ -39,7 +39,7 @@ class SoundManager
         };
         outputDevice.Init(mixer);
         outputDevice.Play();
-        var song = SongMelodyMap[10];
+        var song = SongMelodyMap[8];
         currentSongChords = SoundManager.LoadSong(song.Item1, song.Item2, song.Item3);
     }
 

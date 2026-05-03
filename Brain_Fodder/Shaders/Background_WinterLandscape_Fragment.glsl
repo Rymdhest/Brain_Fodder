@@ -192,12 +192,12 @@ void main()
         blur = mix(.05, .005, i);
         layer = Layer(uv*scale+vec2(t+i*100.,i), blur);
         layer.rgb *= (1.-i) * TREE_COL;
-        col = mix(col, layer*0.15, layer.a);
+        col = mix(col, layer, layer.a);
     }
     
     col += MoonGlow(uv);
     
     // REMOVED: The extra foreground layer that was rendered here
     
-    fragColor = col;
+    fragColor = col*0.3;
 }

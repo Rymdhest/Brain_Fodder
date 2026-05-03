@@ -46,7 +46,7 @@ namespace Brain_Fodder
 
             WindowHandler.getWindow().UpdateFrame += delegate (FrameEventArgs eventArgs)
             {
-                update((float)eventArgs.Time);
+                update(1/60f);
             };
             WindowHandler.getWindow().RenderFrame += delegate (FrameEventArgs eventArgs)
             {
