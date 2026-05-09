@@ -4,16 +4,18 @@ using System.Diagnostics;
 
 namespace Dino_Engine.ECS.Components
 {
-    public struct CollisionSound : IComponent
+    public struct CollisionSoundComponent : IComponent
     {
 
 
         public float cooldownSeconds = 0.03f;
         public float timeLastPlayed = 0.0f;
         public float minImpulse = 30.0f;
+        public int note = 0;
 
-        public CollisionSound()
+        public CollisionSoundComponent(int note)
         {
+            this.note = note;
         }
 
     }

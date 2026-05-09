@@ -67,6 +67,6 @@ void main()
     applyMountain(col,uv.y + .5    , uv.x + 62.2   , mColors[2]);
     applyMountain(col,uv.y + .75   , uv.x + 1413.7 , mColors[3]);
     
-    fragColor = vec4(col*0.7,1.);
+    fragColor = vec4(col*0.35,1.);
     
 }

@@ -51,10 +51,10 @@ namespace Brain_Fodder.Rendering
 
 
         public MasterRenderer() {
-            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Hex_Fragment");
+            backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Hex_Fragment");
             //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Ocean_Fragment");
             //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Landscape_Fragment");
-            backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Stars_Fragment");
+            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Stars_Fragment");
             //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Matrix_Fragment");
             //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Fish_Fragment");
             //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Snow_Fragment");

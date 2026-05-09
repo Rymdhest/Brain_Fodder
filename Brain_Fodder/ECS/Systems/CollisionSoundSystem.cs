@@ -27,24 +27,29 @@ namespace Dino_Engine.ECS.Systems
 
         private void proccessEntity(EntityView entity, CollisionManifold manifold)
         {
-            if (!entity.Has<CollisionSound>()) return;
-            CollisionSound soundComponent = entity.Get<CollisionSound>();
+            if (!entity.Has<CollisionSoundComponent>()) return;
+            CollisionSoundComponent soundComponent = entity.Get<CollisionSoundComponent>();
             if (WindowHandler.getTotalTime() - soundComponent.timeLastPlayed < soundComponent.cooldownSeconds) return;
             if (manifold.Impulse < soundComponent.minImpulse) return;
-
+            if (Engine.Instance.ecsWorld.GetEntityView(Engine.Instance.ecsWorld.GetSingleton<GameStateComponent>()).Get<GameStateComponent>().IsVictory) return;
             //Console.WriteLine($"Playing collision sound with impulse {manifold.Impulse}");
 
 
             SoundManager.OnBallBounce();
 
             //SoundManager.Play(SoundManager.GenerateSound((int)(manifold.Impulse/200)));
+
+            //SoundManager.Play(SoundManager.GenerateSound(soundComponent.note));
+            //SoundManager.Play(SoundManager.GenerateSound(40));
+
             //SoundManager.Play(SoundManager.GenerateCelebrationSound());
 
-            
-            entity.Set(new CollisionSound
+
+            entity.Set(new CollisionSoundComponent
             {
                 timeLastPlayed = WindowHandler.getTotalTime(),
-                cooldownSeconds = entity.Get<CollisionSound>().cooldownSeconds
+                cooldownSeconds = entity.Get<CollisionSoundComponent>().cooldownSeconds,
+                note = entity.Get<CollisionSoundComponent>().note
             });
         }
 

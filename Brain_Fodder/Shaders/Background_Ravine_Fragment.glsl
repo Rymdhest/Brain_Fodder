@@ -307,7 +307,7 @@ void main(){
     #endif
 	
 	// Camera Setup.
-    vec3 camPos = vec3(0.0, 0.5, iTime*4.); // Camera position, doubling as the ray origin.
+    vec3 camPos = vec3(0.0, 0.5, iTime*2.); // Camera position, doubling as the ray origin.
 
 	vec3 lookAt = camPos + vec3(0.1, 0.1, 0.65);  // "Look At" position.
 

@@ -4,6 +4,7 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using SpaceEngine.Util;
+using System.Drawing;
 
 namespace Dino_Engine.ECS.ECS_Architecture
 {
@@ -42,9 +43,113 @@ namespace Dino_Engine.ECS.ECS_Architecture
 
             //spawnObsticleLevel();
             //spawnCircleLevel();
-            spawnCircleLevel2();
+            //spawnCircleLevel2();
+            spawnPianoLeve3();
+
+            //spawnPianoLevel();
 
         }
+        private void spawnPianoLeve3()
+        {
+            Vector2 center = Engine.Instance.outerResolution / 2;
+            Vector2 size = Engine.Instance.outerResolution;
+            Entity goal = CreateEntity(
+                new PositionComponent(center),
+                new RingComponent(1080 / 2f, 10),
+                //new ColourComponent(new Vector3(1.0f, 0.0f, 0.5f)),
+                new collidableTag(),
+                new VelocityComponent(new Vector2(0f, 0f)),
+                new GoalTag()
+            );
+
+            for (int i = 0; i < 2; i++) {
+                Vector3 color = MyMath.rng3D();
+            if (color.Length < 1.0) color.Normalize();
+            Entity player = CreateEntity(
+                new PositionComponent(center),
+                new CircleComponent(22),
+                new VelocityComponent(MyMath.rng2DMinusPlus().Normalized() * 250f),
+                new ColourComponent(new Vector3(0.5f, 0.4f, 0.9f)),
+                new collidableTag(),
+                new PhysicsComponent(1.0f, 1.05f),
+                new GravityComponent(0),
+                new CollisionSoundComponent(),
+                new KillerTag(),
+                new ScorerTag()
+            );
+        }
+            float r = 150f;
+            int n = 30;
+            for (int i = 0; i < n; i++)
+            {
+                Vector3 color3 = MyMath.rng3D();
+                if (color3.Length < 1.0) color3.Normalize();
+                color3 = new Vector3(0.6f, 0.0f, 0.5f);
+                float t = (i / (float)n);
+                //color3.X = MathF.Cos(t*MathF.Tau*2);
+                //color3.Y = MathF.Sin(t * MathF.Tau*2);
+                Entity circle2 = CreateEntity(
+                    new PositionComponent(center + new Vector2(r * MathF.Sin(t*MathF.Tau), r * MathF.Cos(t * MathF.Tau))),
+                    new RectangleComponent(new Vector2(50, 20), -MathF.Tau * t+MathF.PI/2f),
+                    new VelocityComponent(MyMath.rng2DMinusPlus().Normalized() * 0f),
+                    new ColourComponent(color3),
+                    new collidableTag(),
+                    new PhysicsComponent(0.0f, 1.01f),
+                    new PushOutFromOnCollision(center),
+                    new GravityComponent(0),
+                    new GravityOnVictoryTag(),
+                    new AnimationComponent()
+                );
+            }
+
+        }
+        private void spawnPianoLevel()
+        {
+            Vector2 center = Engine.Instance.outerResolution / 2;
+            Vector2 size = Engine.Instance.outerResolution;
+
+
+            Vector3 color = MyMath.rng3D();
+            if (color.Length < 1.0) color.Normalize();
+
+            for (int i = 0; i < 12; i++)
+            {
+                Vector3 color3 = MyMath.rng3D();
+                if (color3.Length < 1.0) color3.Normalize();
+                color3 = new Vector3(0.5f, 0.5f, 0.5f);
+                color3.X = (i/12f);
+                Entity circle2 = CreateEntity(
+                    new PositionComponent(new Vector2(20+i*(size.X-20f)/12, 360+48*i)),
+                    new CircleComponent(15),    
+                    new VelocityComponent(MyMath.rng2DMinusPlus().Normalized() * 0f),
+                    new ColourComponent(color3),
+                    new collidableTag(),
+                    new PhysicsComponent(1.0f, 1.0f),
+                    new GravityComponent(400),
+                    new CollisionSoundComponent(i)
+                );
+            }
+            Entity b = CreateEntity(
+                new PositionComponent(new Vector2(center.X, 50)),
+                new RectangleComponent(new Vector2(size.X, 30), 0f),
+                new ColourComponent(color),
+                new collidableTag(),
+                new VelocityComponent(new Vector2(0f, 0f)),
+                new PhysicsComponent(0.0f, 1.0f)
+            );
+
+            Entity c = CreateEntity(
+                new PositionComponent(new Vector2(center.X, size.Y-10)),
+                new RectangleComponent(new Vector2(size.X, 30), 0f),
+                new ColourComponent(color),
+                new collidableTag(),
+                new VelocityComponent(new Vector2(0f, 0f)),
+                new PhysicsComponent(0.0f, 1.0f),
+                new GravityComponent(3)
+            );
+        }
+
+
         private void spawnCircleLevel2()
         {
             Vector2 center = Engine.Instance.outerResolution / 2;
@@ -88,12 +193,12 @@ namespace Dino_Engine.ECS.ECS_Architecture
                 Entity circle2 = CreateEntity(
                     new PositionComponent(center),
                     new CircleComponent(30),
-                    new VelocityComponent(new Vector2(MyMath.rngMinusPlus()*150, -200f)),
+                    new VelocityComponent(MyMath.rng2DMinusPlus().Normalized()*500f),
                     new ColourComponent(color3),
                     new collidableTag(),
                     new PhysicsComponent(1.0f, 1.05f),
                     new GravityComponent(0),
-                    new CollisionSound(),
+                    new CollisionSoundComponent(),
                     new KillerTag(),
                     new ScorerTag()
                 );
@@ -191,7 +296,7 @@ namespace Dino_Engine.ECS.ECS_Architecture
                     //new SizeChangerComponent(3f),
                     new PhysicsComponent(1, 0.99f),
                     new GravityComponent(700),
-                    new CollisionSound(),
+                    new CollisionSoundComponent(),
                     new KillableTag(),
                     new ScorerTag()
                 );
@@ -280,7 +385,7 @@ namespace Dino_Engine.ECS.ECS_Architecture
                     new SizeChangerComponent(2f),
                     new PhysicsComponent(1, 1.01f),
                     new GravityComponent(700),
-                    new CollisionSound(),
+                    new CollisionSoundComponent(),
                     new KillerTag(),
                     new ScorerTag()
                 );

@@ -19,7 +19,6 @@ namespace Dino_Engine.ECS.Systems
         {
             var pos = entity.Get<PositionComponent>();
             var vel = entity.Get<VelocityComponent>();
-
             pos.value += vel.value * deltaTime;
             entity.Set(pos);
         }

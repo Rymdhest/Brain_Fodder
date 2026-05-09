@@ -32,28 +32,6 @@ namespace Dino_Engine.ECS.Systems
 
             Engine.Instance.ecsWorld.DestroyEntity(entityA.Entity);
 
-            var world = Engine.Instance.ecsWorld;
-            Vector2 center = Engine.Instance.outerResolution / 2;
-
-
-            for (int i = 0; i<2; i++)
-            {
-                Entity newEntity = world.CreateEntity(
-                    new PositionComponent(center),
-                    new CircleComponent(10),
-                    new ColourComponent(new Vector3(1.0f, 1.0f, 1.0f)),
-                    new collidableTag(),
-                    new PhysicsComponent(1.0f, 1.05f),
-                    new VelocityComponent(MyMath.rng2DMinusPlus().Normalized()*200f),
-                    new GravityComponent(0f),
-                    new KillableTag()
-                );
-            }
-
-            var circle = entityB.Get<CircleComponent>();
-            circle.radius += 0.50f;
-
-            entityB.Set(circle);
 
         }
 

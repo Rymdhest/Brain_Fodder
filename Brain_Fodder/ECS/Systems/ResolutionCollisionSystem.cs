@@ -73,7 +73,6 @@ namespace Dino_Engine.ECS.Systems
 
                 velA.value += impulse * physA.InvMass;
                 velB.value -= impulse * physB.InvMass;
-
                 viewA.Set(velA);
                 viewB.Set(velB);
 

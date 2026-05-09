@@ -1,9 +1,21 @@
-﻿using Brain_Fodder;
-using NAudio.Midi;
-using NAudio.Wave;
+﻿using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 
 class SoundManager
 {
+    public enum SoundEffect
+    {
+        MinecraftXP,
+        Explosion,
+        Jump,
+        CoinPickup
+    }
+    private static readonly Dictionary<SoundEffect, string> SoundPaths = new Dictionary<SoundEffect, string>
+{
+    { SoundEffect.MinecraftXP, "Audio\\minecraft experience orb.wav" },
+};
+
+
     public static bool IsRecording = false;
 
     private static WaveOutEvent outputDevice = new WaveOutEvent();
@@ -21,14 +33,18 @@ class SoundManager
     ("YoureBeautiful", 3, 0),
     ("UndertaleMegalovania", 0, -1),
     ("FinalCountdown", 2, -1),
-    ("Blue", 8  , 0),
+    ("Blue", 8  , -1),
+    ("Gigi D'Agostino - L'Amour Toujours", 0 , -1),
+    ("Trillium Hardtekk", 0 , -1),
 
-    
+
 };
+    private static Dictionary<string, short[]> cachedWavSounds = new Dictionary<string, short[]>();
+
     private static int currentSongShift = 0;
     private static int noteIndex = 0;
     private static float cooldownTimer = 0;
-    private static float COOLDOWN_DURATION = 0.075f;
+    private static float COOLDOWN_DURATION = 0.05f;
     
     public SoundManager()
     {
@@ -39,8 +55,10 @@ class SoundManager
         };
         outputDevice.Init(mixer);
         outputDevice.Play();
-        var song = SongMelodyMap[8];
+        var song = SongMelodyMap[4];
         currentSongChords = SoundManager.LoadSong(song.Item1, song.Item2, song.Item3);
+
+        PreloadSounds();
     }
 
     public static List<List<int>> LoadSong(string fileName, int targetTrack, int shift)
@@ -117,6 +135,118 @@ class SoundManager
         return songData;
     }
 
+    public static void PreloadSounds()
+    {
+        Console.WriteLine("--- Preloading Sound Effects ---");
+        foreach (var entry in SoundPaths)
+        {
+            string filePath = entry.Value;
+
+            // We only load if it's not already in the cache
+            if (!cachedWavSounds.ContainsKey(filePath))
+            {
+                try
+                {
+                    using (var audioFile = new AudioFileReader(filePath))
+                    {
+                        ISampleProvider sampleProvider = audioFile;
+
+                        // Match your mixer format: Mono
+                        if (sampleProvider.WaveFormat.Channels > 1)
+                            sampleProvider = new StereoToMonoSampleProvider(sampleProvider);
+
+                        // Match your mixer format: 44100Hz
+                        if (sampleProvider.WaveFormat.SampleRate != 44100)
+                            sampleProvider = new WdlResamplingSampleProvider(sampleProvider, 44100);
+
+                        var samples = new List<short>();
+                        float[] buffer = new float[8192];
+                        int read;
+                        while ((read = sampleProvider.Read(buffer, 0, buffer.Length)) > 0)
+                        {
+                            for (int i = 0; i < read; i++)
+                                samples.Add((short)(Math.Clamp(buffer[i], -1.0f, 1.0f) * short.MaxValue));
+                        }
+
+                        cachedWavSounds[filePath] = samples.ToArray();
+                        Console.WriteLine($"Loaded: {entry.Key} ({filePath})");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to preload {entry.Key}: {ex.Message}");
+                }
+            }
+        }
+        Console.WriteLine("--- Preload Complete ---\n");
+    }
+
+    private static void PlayWav(string filePath)
+    {
+        // 1. Check if the sound is already loaded to save CPU and disk reads
+        if (!cachedWavSounds.ContainsKey(filePath))
+        {
+            try
+            {
+                using (var audioFile = new NAudio.Wave.AudioFileReader(filePath))
+                {
+                    NAudio.Wave.ISampleProvider sampleProvider = audioFile;
+
+                    // 2. Force conversion to Mono if the WAV is Stereo
+                    if (sampleProvider.WaveFormat.Channels > 1)
+                    {
+                        sampleProvider = new NAudio.Wave.SampleProviders.StereoToMonoSampleProvider(sampleProvider);
+                    }
+
+                    // 3. Force conversion to 44100Hz if the WAV has a different sample rate
+                    if (sampleProvider.WaveFormat.SampleRate != 44100)
+                    {
+                        sampleProvider = new NAudio.Wave.SampleProviders.WdlResamplingSampleProvider(sampleProvider, 44100);
+                    }
+
+                    // 4. Read the entire file into a memory list
+                    var samples = new List<short>();
+                    float[] buffer = new float[8192];
+                    int read;
+
+                    while ((read = sampleProvider.Read(buffer, 0, buffer.Length)) > 0)
+                    {
+                        for (int i = 0; i < read; i++)
+                        {
+                            // Convert the float data back into shorts for your existing Play() method
+                            samples.Add((short)(Math.Clamp(buffer[i], -1.0f, 1.0f) * short.MaxValue));
+                        }
+                    }
+
+                    // Cache the processed short array
+                    cachedWavSounds[filePath] = samples.ToArray();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading WAV '{filePath}': {ex.Message}");
+                return;
+            }
+        }
+
+        // 5. Send the cached data into your existing playback pipeline
+        Play(cachedWavSounds[filePath]);
+    }
+
+    public static void PlayWav(SoundEffect effect)
+    {
+        // Look up the file path linked to this enum
+        if (SoundPaths.TryGetValue(effect, out string filePath))
+        {
+            // Call the original PlayWav method that handles the caching and NAudio playback
+            PlayWav(filePath);
+        }
+        else
+        {
+            Console.WriteLine($"[Warning] No file path mapped for sound effect: {effect}");
+        }
+    }
+
     public void Update(float deltaTime)
     {
         if (cooldownTimer > 0)
@@ -133,6 +263,9 @@ class SoundManager
 
         cooldownTimer = COOLDOWN_DURATION;
         if (noteIndex >= currentSongChords.Count) noteIndex = 0;
+
+        //PlayWav(SoundEffect.MinecraftXP);
+        //return;
 
         // --- CHANGE IS HERE ---
         // Instead of taking the whole list, we only take the HIGHEST note.
@@ -197,26 +330,19 @@ class SoundManager
     public static void Play(short[] soundData)
     {
         var ms = new MemoryStream();
-        var writer = new BinaryWriter(ms);
-
-        foreach (var sample in soundData)
+        using (var writer = new BinaryWriter(ms, System.Text.Encoding.UTF8, true))
         {
-            writer.Write(sample);
+            foreach (var sample in soundData) writer.Write(sample);
         }
-
         ms.Position = 0;
 
-        // 2. Create the raw stream (16-bit Mono)
         var rawStream = new RawSourceWaveStream(ms, new WaveFormat(44100, 16, 1));
+        var sampleProvider = new Wave16ToFloatProvider(rawStream).ToSampleProvider();
 
-        // 3. Convert the 16-bit integer stream into a 32-bit Float stream
-        var floatStream = new Wave16ToFloatProvider(rawStream);
-
-        // 4. Push the float stream directly into the mixer!
-        mixer.AddMixerInput(floatStream);
-
+        // Add this to the mixer at a reasonable volume
+        // We do NOT use a limiter here; we apply it to the MIXER output
+        mixer.AddMixerInput(sampleProvider);
     }
-
     public static void update(float delta)
     {
     }
@@ -228,53 +354,45 @@ class SoundManager
     }
 
 
-    public static short[]  GenerateSound(int step)
+    public static short[] GenerateSound(int step)
     {
         int sampleRate = 44100;
-        double duration = 1.0;
+        double duration = 0.6;
         int totalSamples = (int)(sampleRate * duration);
         short[] audioData = new short[totalSamples];
 
-        // Pick a note
-        //int[] scale = { 60, 62, 64, 65, 67, 69, 71 };
-        int[] scale = { 60, 62, 63, 65, 67, 68, 70 };
-
-        double freq = GetFrequency(scale[Math.Clamp(step, 0, 6)]);
-
-        freq /= 1.0;
-
-        // Pre-calculate phase steps for efficiency
-        double phaseStep = Math.Tau * freq / sampleRate;
-        double phase = 0;
+        int[] scale = { 60, 62, 64, 65, 67, 69, 71, 72, 74, 76, 77, 79, 81, 83, 84 };
+        double freq = GetFrequency(scale[step % scale.Length]);
 
         for (int i = 0; i < totalSamples; i++)
         {
             double time = (double)i / sampleRate;
 
-            // 1. Advance the fundamental phase
-            phase += phaseStep;
+            // 1. Crisp Attack (The Tine)
+            double hammer = Math.Sin(Math.Tau * freq * 8.0 * time) * Math.Exp(-100.0 * time);
 
-            // 2. Additive Synthesis with Harmonic-Specific Decay
-            double sampleValue = 0;
-            // Fundamental
-            sampleValue += 1.0 * Math.Sin(phase) * Math.Exp(-2.0 * time);
-            // 2nd Harmonic (Octave) - Decays faster
-            sampleValue += 0.5 * Math.Sin(phase * 2.0) * Math.Exp(-4.0 * time);
-            // 3rd Harmonic - Decays even faster
-            sampleValue += 0.2 * Math.Sin(phase * 3.01) * Math.Exp(-6.0 * time);
+            // 2. Warm Body
+            // We use a slight "overdrive" math here to make it sound thick but smooth
+            double rawSine = Math.Sin(Math.Tau * freq * time);
+            double body = Math.Tanh(rawSine * 1.5); // Tanh "squashes" the wave smoothly
 
-            // 10ms Fade In
-            double attack = Math.Min(1.0, time / 0.01);
-            // 50ms Fade Out
-            double release = Math.Min(1.0, (duration - time) / 0.05);
+            // 3. The Envelope
+            double envelope = Math.Exp(-6.0 * time);
+            double attack = Math.Min(1.0, time / 0.002);
 
-            // Apply both
-            double finalEnvelope = attack * release * Math.Exp(-3.0 * time);
+            // Anti-static hard release
+            double fadeStart = duration - 0.02;
+            double release = (time < fadeStart) ? 1.0 : (duration - time) / 0.02;
 
-            double output = sampleValue * finalEnvelope * 0.5;
-            audioData[i] = (short)(Math.Clamp(output, -1.0, 1.0) * short.MaxValue);
+            double combined = (hammer * 0.4) + (body * envelope);
+
+            // --- SOFT CLIPPING (The Secret Sauce) ---
+            // Instead of hard-clipping at 1.0, we use a sigmoid function.
+            // This makes sure that even at high volumes, the wave stays "round."
+            double finalSample = Math.Atan(combined * 2.0) / (Math.PI / 2.0);
+
+            audioData[i] = (short)(finalSample * 30000 * attack * release);
         }
-        //Console.WriteLine("Generated sound with frequency: " + freq + " Hz");
         return audioData;
     }
     public static short[] GenerateCelebrationSound()
