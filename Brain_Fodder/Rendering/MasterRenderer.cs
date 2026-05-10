@@ -32,6 +32,13 @@ namespace Brain_Fodder.Rendering
         public Vector3 color;
         public float rotation;
     }
+    public struct TriangleRenderCommand
+    {
+        public Vector2 position;
+        public Vector2 size;
+        public Vector3 color;
+        public float rotation;
+    }
 
     internal class MasterRenderer
     {
@@ -41,6 +48,7 @@ namespace Brain_Fodder.Rendering
         public static ShaderProgram VictoryShader = new ShaderProgram("Simple_Vertex", "Victory_Fragment");
         public static ShaderProgram backGroundShader;
         private glModel unitSquare;
+        private glModel unitTriangle;
         private glModel fullScreenQuad;
         private glModel lineBase;
         private Matrix4 projection;
@@ -48,12 +56,13 @@ namespace Brain_Fodder.Rendering
         public static List<RingRenderCommand> rings = new List<RingRenderCommand>();
         public static List<CircleRenderCommand> circles = new List<CircleRenderCommand>();
         public static List<RectangleRenderCommand> rectangles = new List<RectangleRenderCommand>();
+        public static List<TriangleRenderCommand> triangles = new List<TriangleRenderCommand>();
 
 
         public MasterRenderer() {
-            backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Hex_Fragment");
+            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Hex_Fragment");
             //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Ocean_Fragment");
-            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Landscape_Fragment");
+            backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Landscape_Fragment");
             //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Stars_Fragment");
             //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Matrix_Fragment");
             //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Fish_Fragment");
@@ -67,6 +76,10 @@ namespace Brain_Fodder.Rendering
             float[] positions = { -0.5f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f };
             int[] indices = { 0, 1, 2, 3, 0, 2 };
             unitSquare = glLoader.loadToVAO(positions, indices);
+
+            float[] positionsTriangle = {-0.5f, -0.5f, 0.5f, -0.5f, 0.0f, 0.5f };
+            int[] indicesTriangle = { 0, 1, 2};
+            unitTriangle = glLoader.loadToVAO(positionsTriangle, indicesTriangle);
 
             float[] positionsLine = { 0, 0.5f, 0, -0.5f, 1, -0.5f, 1, 0.5f };
             int[] indicesLine = { 0, 1, 2, 3, 0, 2 };
@@ -107,6 +120,7 @@ namespace Brain_Fodder.Rendering
             renderRings();
             rendercircles();
             renderRectangles();
+            renderTriangles();
 
             renderVictory();
 
@@ -182,6 +196,23 @@ namespace Brain_Fodder.Rendering
             }
             circleShader.unBind();
             circles.Clear();
+        }
+        private void renderTriangles()
+        {
+            rectangleShader.bind();
+            foreach (TriangleRenderCommand triangle in triangles)
+            {
+                rectangleShader.loadUniformMatrix4f("uProjection", projection);
+                rectangleShader.loadUniformVector3f("color", triangle.color);
+                rectangleShader.loadUniformMatrix4f("modelMatrix", MyMath.createTransformationMatrix(triangle.position, triangle.rotation, triangle.size));
+
+                glModel glmodel = unitTriangle;
+                GL.BindVertexArray(glmodel.getVAOID());
+                GL.EnableVertexAttribArray(0);
+                GL.DrawElements(PrimitiveType.Triangles, glmodel.getVertexCount(), DrawElementsType.UnsignedInt, 0);
+            }
+            rectangleShader.unBind();
+            triangles.Clear();
         }
 
         private void renderRectangles()

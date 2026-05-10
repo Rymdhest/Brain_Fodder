@@ -44,11 +44,80 @@ namespace Dino_Engine.ECS.ECS_Architecture
             //spawnObsticleLevel();
             //spawnCircleLevel();
             //spawnCircleLevel2();
-            spawnPianoLeve3();
+            //spawnPianoLeve3();
+            spawnPianoLeve4();
 
             //spawnPianoLevel();
 
         }
+
+        public void spawnBall()
+        {
+            Vector2 velocity = new Vector2(150, 290);
+            Vector2 center = Engine.Instance.outerResolution / 2;
+            Vector3 color = MyMath.rng3D();
+            if (color.Length < 1.0) color.Normalize();
+            Entity player = CreateEntity(
+                new PositionComponent(center),
+                new CircleComponent(21),
+                //new RectangleComponent(new Vector2(22, 22), 0),
+                new VelocityComponent(velocity),
+                new ColourComponent(new Vector3(0.5f, 0.4f, 0.9f)),
+                new collidableTag(),
+                new PhysicsComponent(1.0f, 1.05f),
+                new GravityComponent(0),
+                new CollisionSoundComponent(),
+                new FreezeMyselfOnHitComponent(),
+                new SpawnNewBallOnHitComponent(),
+                new GravityOnVictoryTag(),
+                new KillerTag(),
+                new ScorerTag()
+            );
+        }
+
+        private void spawnPianoLeve4()
+        {
+            Vector2 center = Engine.Instance.outerResolution / 2;
+            Vector2 size = Engine.Instance.outerResolution;
+            Entity goal = CreateEntity(
+                new PositionComponent(center),
+                new RingComponent(1080 / 2f, 10),
+                //new ColourComponent(new Vector3(1.0f, 0.0f, 0.5f)),
+                new collidableTag(),
+                new VelocityComponent(new Vector2(0f, 0f)),
+                new GoalTag()
+            );
+
+            for (int i = 0; i < 1; i++)
+            {
+                spawnBall();
+            }
+            float r = 220f;
+            int n =32;
+            for (int i = 0; i < n-3; i++)
+            {
+                Vector3 color3 = MyMath.rng3D();
+                if (color3.Length < 1.0) color3.Normalize();
+                color3 = new Vector3(0.8f, 0.5f, 0.4f);
+                float t = (i / (float)n);
+                t += 0.5f;
+                //color3.X = MathF.Cos(t*MathF.Tau*2);
+                //color3.Y = MathF.Sin(t * MathF.Tau*2);
+                Entity circle2 = CreateEntity(
+                    new PositionComponent(center + new Vector2(r * MathF.Sin(t * MathF.Tau), r * MathF.Cos(t * MathF.Tau))),
+                    new TriangleComponent(new Vector2(40, 40), -MathF.Tau * t + MathF.PI / 1f),
+                    new VelocityComponent(MyMath.rng2DMinusPlus().Normalized() * 0f),
+                    new ColourComponent(color3),
+                    new collidableTag(),
+                    new PhysicsComponent(0.0f, 1.01f),
+                    new GravityComponent(0),
+                    new GravityOnVictoryTag(),
+                    new AnimationComponent()
+                );
+            }
+
+        }
+
         private void spawnPianoLeve3()
         {
             Vector2 center = Engine.Instance.outerResolution / 2;

@@ -2,6 +2,7 @@
 using Brain_Fodder;
 using Dino_Engine.ECS.Components;
 using Dino_Engine.ECS.ECS_Architecture;
+using SpaceEngine.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,9 +23,12 @@ namespace Dino_Engine.ECS.Systems
             {
 
                 var gravity = entity.Get<GravityComponent>();
-                gravity.gravity = 400f;
+                gravity.gravity = 400f+MyMath.rng()*100f;
                 entity.Set<GravityComponent>(gravity);
 
+                var velocity = entity.Get<VelocityComponent>();
+                velocity.value += MyMath.rng2DMinusPlus() * 100f;
+                entity.Set<VelocityComponent>(velocity);
             }
         }
     }
