@@ -44,7 +44,7 @@ class SoundManager
     private static int currentSongShift = 0;
     private static int noteIndex = 0;
     private static float cooldownTimer = 0;
-    private static float COOLDOWN_DURATION = 0.05f;
+    private static float COOLDOWN_DURATION = 0.0f;
     
     public SoundManager()
     {
@@ -55,7 +55,7 @@ class SoundManager
         };
         outputDevice.Init(mixer);
         outputDevice.Play();
-        var song = SongMelodyMap[4];
+        var song = SongMelodyMap[9];
         currentSongChords = SoundManager.LoadSong(song.Item1, song.Item2, song.Item3);
 
         PreloadSounds();
@@ -288,7 +288,7 @@ class SoundManager
     public static short[] GenerateChordSound(List<int> notes)
     {
         int sampleRate = 44100;
-        double duration = 0.5; // Short duration for a snappy "plink" sound
+        double duration = 1.0; // Short duration for a snappy "plink" sound
         int totalSamples = (int)(sampleRate * duration);
         float[] mixBuffer = new float[totalSamples];
 

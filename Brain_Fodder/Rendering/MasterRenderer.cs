@@ -62,7 +62,7 @@ namespace Brain_Fodder.Rendering
         public MasterRenderer() {
             //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Hex_Fragment");
             //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Ocean_Fragment");
-            backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Landscape_Fragment");
+            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Landscape_Fragment");
             //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Stars_Fragment");
             //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Matrix_Fragment");
             //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Fish_Fragment");
@@ -71,6 +71,7 @@ namespace Brain_Fodder.Rendering
             //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Ravine_Fragment");
             //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Aurora_Fragment");
             //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Abstract_Fragment");
+            backGroundShader = new ShaderProgram("Simple_Vertex", "Background_BlackHole_Fragment");
 
 
             float[] positions = { -0.5f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f };

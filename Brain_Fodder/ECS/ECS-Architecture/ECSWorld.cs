@@ -45,12 +45,147 @@ namespace Dino_Engine.ECS.ECS_Architecture
             //spawnCircleLevel();
             //spawnCircleLevel2();
             //spawnPianoLeve3();
-            spawnPianoLeve4();
+            //spawnPianoLeve4();
+            //spawnPianoLeve5();
+            spawnPianoLeve6();
 
             //spawnPianoLevel();
 
         }
 
+        private void spawnPianoLeve6()
+        {
+            Vector2 center = Engine.Instance.outerResolution / 2;
+            Vector2 size = Engine.Instance.outerResolution;
+            Entity goal = CreateEntity(
+                new PositionComponent(center),
+                new RingComponent(1080 / 2f, 10),
+                //new ColourComponent(new Vector3(1.0f, 0.0f, 0.5f)),
+                new collidableTag(),
+                new VelocityComponent(new Vector2(0f, 0f)),
+                new GoalTag()
+            );
+
+            Entity line = CreateEntity(
+                new PositionComponent(center+new Vector2(0, 400+40)),
+                new RectangleComponent(new Vector2(2, 800), 0f),
+                new ColourComponent(new Vector3(0.3f, 0.3f, 0.3f)),
+                new collidableTag(),
+                new PhysicsComponent(0.0f, 1.0f),
+                new VelocityComponent(new Vector2(0f, 0f))
+            );
+
+            for (int i = 0; i < 1; i++)
+            {
+                //spawnBall2();
+            }
+            float rStart = 50f;
+            float rEnd = 225f;
+            int n = 12;
+
+            // 1. Define your master sync variables
+            float masterLoopTime = 25f; // They will all perfectly align every 30 seconds
+            int baseSpins =5;         // The slowest ball spins 15 times in those 30 seconds
+
+            for (int i = 0; i < n; i++)
+            {
+                Vector3 color3 = MyMath.rng3D();
+                if (color3.Length < 1.0) color3.Normalize();
+                color3 = new Vector3(0.99f, 0.75f, 0.5f);
+                float t = (i / (float)n);
+                t += 0.5f;
+                //color3.X = MathF.Cos(t*MathF.Tau*2);
+                //color3.Y = MathF.Sin(t * MathF.Tau*2);
+                float r = (i / (float)n)*(rEnd-rStart)+rStart;
+
+                float spinsInMasterLoop = baseSpins + i;
+                float duration = masterLoopTime / spinsInMasterLoop;
+                float ballSize = 5f;
+                Entity circle2 = CreateEntity(
+                    new PositionComponent(center + new Vector2(r * MathF.Sin(t * MathF.Tau), r * MathF.Cos(t * MathF.Tau))),
+                    new CircleComponent(ballSize),
+                    new VelocityComponent(MyMath.rng2DMinusPlus().Normalized() * 0f),
+                    new ColourComponent(color3),
+                    new collidableTag(),
+                    new PhysicsComponent(0.0f, 1.05f),
+                    new GravityComponent(0),
+                    new GravityOnVictoryTag(),
+                    new SoundComponent(i),
+                    new AppearenceAnimationComponent(color3*new Vector3(4f, 2f, 3f), color3, ballSize*2.0f, ballSize, 1f),
+                    new KillableTag(),
+                    new SpinAroundComponent(center,r, duration)
+                );
+            }
+
+        }
+
+        private void spawnPianoLeve5()
+        {
+            Vector2 center = Engine.Instance.outerResolution / 2;
+            Vector2 size = Engine.Instance.outerResolution;
+            Entity goal = CreateEntity(
+                new PositionComponent(center),
+                new RingComponent(1080 / 2f, 10),
+                //new ColourComponent(new Vector3(1.0f, 0.0f, 0.5f)),
+                new collidableTag(),
+                new VelocityComponent(new Vector2(0f, 0f)),
+                new GoalTag()
+            );
+
+            for (int i = 0; i < 1; i++)
+            {
+                spawnBall2();
+            }
+            float r = 225f;
+            int n = 82;
+            for (int i = 0; i < n ; i++)
+            {
+                Vector3 color3 = MyMath.rng3D();
+                if (color3.Length < 1.0) color3.Normalize();
+                color3 = new Vector3(0.8f, 0.5f, 0.4f);
+                float t = (i / (float)n);
+                t += 0.5f;
+                //color3.X = MathF.Cos(t*MathF.Tau*2);
+                //color3.Y = MathF.Sin(t * MathF.Tau*2);
+                Entity circle2 = CreateEntity(
+                    new PositionComponent(center + new Vector2(r * MathF.Sin(t * MathF.Tau), r * MathF.Cos(t * MathF.Tau))),
+                    new RectangleComponent(new Vector2(18, 8), -MathF.Tau * t + MathF.PI / 1f),
+                    new VelocityComponent(MyMath.rng2DMinusPlus().Normalized() * 0f),
+                    new ColourComponent(color3),
+                    new collidableTag(),
+                    new PhysicsComponent(0.0f, 1.05f),
+                    new GravityComponent(0),
+                    new GravityOnVictoryTag(),
+                    new KillableTag(),
+                    new PushOutFromOnCollision(center, 350f),
+                    new AnimationComponent()
+                );
+            }
+
+        }
+        public void spawnBall2()
+        {
+            //Vector2 velocity = new Vector2(150, 290);
+            Vector2 velocity = MyMath.rng2DMinusPlus().Normalized() * 300;
+            Vector2 center = Engine.Instance.outerResolution / 2;
+            Vector3 color = MyMath.rng3D();
+            if (color.Length < 1.0) color.Normalize();
+            Entity player = CreateEntity(
+                new PositionComponent(center),
+                new CircleComponent(13),
+                //new RectangleComponent(new Vector2(22, 22), 0),
+                new VelocityComponent(velocity),
+                new ColourComponent(new Vector3(0.5f, 0.4f, 0.9f)),
+                new collidableTag(),
+                new PhysicsComponent(1.0f, 1.05f),
+                new GravityComponent(0),
+                new CollisionSoundComponent(),
+                new SizeChangerComponent(1.0f),
+                new GravityOnVictoryTag(),
+                //new KillerTag(),
+                new ScorerTag()
+            );
+        }
         public void spawnBall()
         {
             Vector2 velocity = new Vector2(150, 290);
@@ -164,7 +299,7 @@ namespace Dino_Engine.ECS.ECS_Architecture
                     new ColourComponent(color3),
                     new collidableTag(),
                     new PhysicsComponent(0.0f, 1.01f),
-                    new PushOutFromOnCollision(center),
+                    new PushOutFromOnCollision(center, 50f),
                     new GravityComponent(0),
                     new GravityOnVictoryTag(),
                     new AnimationComponent()

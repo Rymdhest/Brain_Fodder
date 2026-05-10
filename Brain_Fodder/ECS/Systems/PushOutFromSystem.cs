@@ -34,7 +34,7 @@ namespace Dino_Engine.ECS.Systems
             var position = entity.Get<PositionComponent>();
 
             Vector2 start = position.value;
-            var end = start+ (position.value - pushComponent.center).Normalized() * 50f;
+            var end = start+ (position.value - pushComponent.center).Normalized() * pushComponent.pushDistance;
             AnimationComponent animation = entity.Get<AnimationComponent>();
 
             animation.start = start;
@@ -47,7 +47,7 @@ namespace Dino_Engine.ECS.Systems
             Console.WriteLine($"Animation t: {animation.t}, position: {position.value}");
             ColourComponent colourComponent = entity.Get<ColourComponent>();
             colourComponent.colour.Y += 0.2f;
-            entity.Set(colourComponent);
+            //entity.Set(colourComponent);
         }
 
         protected override void UpdateEntity(EntityView entity, ECSWorld world, float deltaTime)
