@@ -69,9 +69,9 @@ namespace Brain_Fodder.Rendering
             //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Snow_Fragment");
             //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_WinterLandscape_Fragment");
             //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Ravine_Fragment");
-            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Aurora_Fragment");
+            backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Aurora_Fragment");
             //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Abstract_Fragment");
-            backGroundShader = new ShaderProgram("Simple_Vertex", "Background_BlackHole_Fragment");
+            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_BlackHole_Fragment");
 
 
             float[] positions = { -0.5f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f };

@@ -44,7 +44,7 @@ class SoundManager
     private static int currentSongShift = 0;
     private static int noteIndex = 0;
     private static float cooldownTimer = 0;
-    private static float COOLDOWN_DURATION = 0.0f;
+    private static float COOLDOWN_DURATION = 0.03f;
     
     public SoundManager()
     {
@@ -55,7 +55,7 @@ class SoundManager
         };
         outputDevice.Init(mixer);
         outputDevice.Play();
-        var song = SongMelodyMap[9];
+        var song = SongMelodyMap[4];
         currentSongChords = SoundManager.LoadSong(song.Item1, song.Item2, song.Item3);
 
         PreloadSounds();

@@ -18,6 +18,8 @@ namespace Dino_Engine.ECS.ECS_Architecture
         private Dictionary<Type, Entity> SingletonToEntity = new();
         public Entity Camera;
 
+        private static int spawns = 0;
+
         public int Count => entityLocations.Count;
         public ECSWorld()
         {
@@ -44,10 +46,10 @@ namespace Dino_Engine.ECS.ECS_Architecture
             //spawnObsticleLevel();
             //spawnCircleLevel();
             //spawnCircleLevel2();
-            //spawnPianoLeve3();
+            spawnPianoLeve3();
             //spawnPianoLeve4();
             //spawnPianoLeve5();
-            spawnPianoLeve6();
+            //spawnPianoLeve6();
 
             //spawnPianoLevel();
 
@@ -178,7 +180,7 @@ namespace Dino_Engine.ECS.ECS_Architecture
                 new ColourComponent(new Vector3(0.5f, 0.4f, 0.9f)),
                 new collidableTag(),
                 new PhysicsComponent(1.0f, 1.05f),
-                new GravityComponent(0),
+                new GravityComponent(200),
                 new CollisionSoundComponent(),
                 new SizeChangerComponent(1.0f),
                 new GravityOnVictoryTag(),
@@ -188,7 +190,7 @@ namespace Dino_Engine.ECS.ECS_Architecture
         }
         public void spawnBall()
         {
-            Vector2 velocity = new Vector2(150, 290);
+            Vector2 velocity = MyMath.rng2DMinusPlus().Normalized()*200.0f * (1f+spawns*0.1f);
             Vector2 center = Engine.Instance.outerResolution / 2;
             Vector3 color = MyMath.rng3D();
             if (color.Length < 1.0) color.Normalize();
@@ -208,6 +210,7 @@ namespace Dino_Engine.ECS.ECS_Architecture
                 new KillerTag(),
                 new ScorerTag()
             );
+            spawns++;
         }
 
         private void spawnPianoLeve4()
@@ -233,7 +236,7 @@ namespace Dino_Engine.ECS.ECS_Architecture
             {
                 Vector3 color3 = MyMath.rng3D();
                 if (color3.Length < 1.0) color3.Normalize();
-                color3 = new Vector3(0.8f, 0.5f, 0.4f);
+                color3 = new Vector3(0.4f, 0.8f, 0.6f);
                 float t = (i / (float)n);
                 t += 0.5f;
                 //color3.X = MathF.Cos(t*MathF.Tau*2);
@@ -266,7 +269,7 @@ namespace Dino_Engine.ECS.ECS_Architecture
                 new GoalTag()
             );
 
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < 1; i++) {
                 Vector3 color = MyMath.rng3D();
             if (color.Length < 1.0) color.Normalize();
             Entity player = CreateEntity(
