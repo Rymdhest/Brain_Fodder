@@ -3,12 +3,12 @@ using OpenTK.Mathematics;
 
 namespace Dino_Engine.ECS.Components
 {
-    public struct PotentialPair
+    public struct CollisionPair
     {
         public Entity EntityA;
         public Entity EntityB;
 
-        public PotentialPair(Entity entityA, Entity entityB)
+        public CollisionPair(Entity entityA, Entity entityB)
         {
             EntityA = entityA;
             EntityB = entityB;
@@ -26,18 +26,33 @@ namespace Dino_Engine.ECS.Components
 
     public struct CollisionBufferComponent : IComponent
     {
-        public List<PotentialPair> Pairs = new List<PotentialPair>(1024);
+        public List<CollisionPair> PotentialPairs = new List<CollisionPair>(1024);
 
         public List<CollisionManifold> Manifolds = new List<CollisionManifold>(1024);
 
+        // Persistent history state
+        public HashSet<(Entity, Entity)> PreviousCollisions = new HashSet<(Entity, Entity)>();
+        // NEW: Moved from system class into the component to keep systems stateless
+        public HashSet<(Entity, Entity)> CurrentCollisions = new HashSet<(Entity, Entity)>(1024);
+
+        public List<CollisionPair> EnterEvents = new List<CollisionPair>(256);
+        public List<CollisionPair> StayEvents = new List<CollisionPair>(256);
+        public List<CollisionPair> ExitEvents = new List<CollisionPair>(256);
         public CollisionBufferComponent()
         {
         }
-
+        public static (Entity, Entity) GetPairKey(Entity a, Entity b)
+        {
+            return a.Id < b.Id ? (a, b) : (b, a);
+        }
         public void Clear()
         {
-            Pairs.Clear();
+            PotentialPairs.Clear();
             Manifolds.Clear();
+            EnterEvents.Clear();
+            StayEvents.Clear();
+            ExitEvents.Clear();
+            CurrentCollisions.Clear();
         }
 
     }

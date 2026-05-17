@@ -55,7 +55,7 @@ class SoundManager
         };
         outputDevice.Init(mixer);
         outputDevice.Play();
-        var song = SongMelodyMap[4];
+        var song = SongMelodyMap[1];
         currentSongChords = SoundManager.LoadSong(song.Item1, song.Item2, song.Item3);
 
         PreloadSounds();

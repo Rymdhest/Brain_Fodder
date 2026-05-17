@@ -1,4 +1,5 @@
-﻿using Brain_Fodder.Recording;
+﻿using Brain_Fodder.LevelStuff;
+using Brain_Fodder.Recording;
 using Brain_Fodder.Rendering;
 using Dino_Engine.ECS.Components;
 using Dino_Engine.ECS.ECS_Architecture;
@@ -28,6 +29,10 @@ namespace Brain_Fodder
         private FrameBuffer frameBuffer;
         public Vector2i innerResolution = new Vector2i(1080, 1920)*1;
         public Vector2i outerResolution = new Vector2i(1080, 1920) / 2;
+        public long frameCount = 0;
+
+        public Level currentLevel;
+
         public static Engine? Instance { get => _instance; }
 
         public Engine()
@@ -40,6 +45,7 @@ namespace Brain_Fodder
             ComponentTypeRegistry.AutoRegisterAllComponents();
             SystemRegistry.AutoRegisterAllSystems();
             ecsWorld = new ECSWorld();
+            ecsWorld.SpawnLevel();
 
             ecsWorld.ApplyDeferredCommands();
             soundManager = new SoundManager();
@@ -51,6 +57,7 @@ namespace Brain_Fodder
             WindowHandler.getWindow().RenderFrame += delegate (FrameEventArgs eventArgs)
             {
                 render();
+                frameCount++;
             };
             WindowHandler.getWindow().Resize += delegate (ResizeEventArgs eventArgs)
             {

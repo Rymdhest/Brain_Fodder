@@ -1,4 +1,5 @@
 ﻿using Brain_Fodder;
+using Brain_Fodder.LevelStuff;
 using Dino_Engine.ECS.Components;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
@@ -18,12 +19,12 @@ namespace Dino_Engine.ECS.ECS_Architecture
         private Dictionary<Type, Entity> SingletonToEntity = new();
         public Entity Camera;
 
+        public Level Level;
         private static int spawns = 0;
 
         public int Count => entityLocations.Count;
         public ECSWorld()
         {
-            SpawnLevel();
 
         }
 
@@ -46,13 +47,13 @@ namespace Dino_Engine.ECS.ECS_Architecture
             //spawnObsticleLevel();
             //spawnCircleLevel();
             //spawnCircleLevel2();
-            spawnPianoLeve3();
+            //spawnPianoLeve3();
             //spawnPianoLeve4();
             //spawnPianoLeve5();
             //spawnPianoLeve6();
 
             //spawnPianoLevel();
-
+            Engine.Instance.currentLevel = new PlatformLevel();
         }
 
         private void spawnPianoLeve6()
@@ -81,13 +82,13 @@ namespace Dino_Engine.ECS.ECS_Architecture
             {
                 //spawnBall2();
             }
-            float rStart = 50f;
-            float rEnd = 225f;
-            int n = 12;
+            float rStart = 45f;
+            float rEnd = 235f;
+            int n = 6;
 
             // 1. Define your master sync variables
-            float masterLoopTime = 25f; // They will all perfectly align every 30 seconds
-            int baseSpins =5;         // The slowest ball spins 15 times in those 30 seconds
+            float masterLoopTime = 23f; // They will all perfectly align every 30 seconds
+            int baseSpins =7;         // The slowest ball spins 15 times in those 30 seconds
 
             for (int i = 0; i < n; i++)
             {

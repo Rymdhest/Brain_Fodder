@@ -16,7 +16,7 @@ namespace Dino_Engine.ECS.Systems
         {
             var buffer = world.GetComponent<CollisionBufferComponent>(world.GetSingleton<CollisionBufferComponent>());
 
-            foreach (var pair in buffer.Pairs)
+            foreach (var pair in buffer.PotentialPairs)
             {
                 var entityA = world.GetEntityView(pair.EntityA);
                 var entityB = world.GetEntityView(pair.EntityB);

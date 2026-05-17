@@ -18,6 +18,8 @@ namespace Dino_Engine.ECS.Systems
         {
             var buffer = world.GetComponent<CollisionBufferComponent>(world.GetSingleton<CollisionBufferComponent>());
 
+            if (world.GetEntityView(world.GetSingleton<GameStateComponent>()).Get<GameStateComponent>().IsVictory) return;
+
             foreach (var manifold in buffer.Manifolds)
             {
                 proccessEntity(world.GetEntityView(manifold.EntityA), world.GetEntityView(manifold.EntityB));
@@ -30,7 +32,6 @@ namespace Dino_Engine.ECS.Systems
             if (!entityA.Has<FreezeMyselfOnHitComponent>()) return;
             if (!entityA.Has<CircleComponent>()) return;
             if (!entityB.Has<TriangleComponent>()) return;
-            if (Engine.Instance.ecsWorld.GetEntityView(Engine.Instance.ecsWorld.GetSingleton<GameStateComponent>()).Get<GameStateComponent>().IsVictory) return;
 
             var physicsComponent = entityA.Get<PhysicsComponent>();
             physicsComponent.InvMass = 0.0f;

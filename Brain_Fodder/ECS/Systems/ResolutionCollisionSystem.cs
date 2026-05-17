@@ -80,7 +80,6 @@ namespace Dino_Engine.ECS.Systems
                 buffer.Manifolds[i] = manifold;
             }
 
-            //buffer.Clear();
         }
     }
 }

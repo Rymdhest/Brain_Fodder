@@ -83,6 +83,7 @@ namespace Brain_Fodder.Recording
                     _recordingFps
                 );
             }
+            Engine.Instance.currentLevel.GenerateVideoMetadata(FinalPath);
         }
     }
 }

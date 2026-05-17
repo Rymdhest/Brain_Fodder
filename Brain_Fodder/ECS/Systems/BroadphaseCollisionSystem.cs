@@ -54,7 +54,7 @@ namespace Dino_Engine.ECS.Systems
                     if (isAStatic && isBStatic) continue;
 
                     // Forward the pair to the Narrowphase
-                    buffer.Pairs.Add(new PotentialPair(entityA.Entity, entityB.Entity));
+                    buffer.PotentialPairs.Add(new CollisionPair(entityA.Entity, entityB.Entity));
                 }
             }
         }
