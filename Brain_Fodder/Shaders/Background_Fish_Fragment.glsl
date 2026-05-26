@@ -6,10 +6,11 @@ in vec2 v_LocalPos;
 
 uniform vec2 iResolution;
 uniform float iTime;
+uniform vec3 main_color;
 
 
 // a bunch of random parameters
-#define AmbientColor vec3(0.05, 0.125, 0.15)
+#define AmbientColor main_color*0.1
 #define Itterations 20.
 
 // bubble parameters

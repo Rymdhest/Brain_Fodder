@@ -11,18 +11,17 @@ using System.Threading.Tasks;
 
 namespace Brain_Fodder.LevelStuff
 {
-    public class PlatformLevel : Level
+    public class CircleLevel : Level
     {
 
 
-        public PlatformLevel() : base("Platforms")
+        public CircleLevel() : base("Platforms")
         {
         }
 
 
         public override  void LoadLevel(ECSWorld world)
         {
-            spawnBorder(left: false, right: false, top: true, bot: false);
 
             int numBalls = 1;
             setRequiredWinScore(numBalls);
@@ -31,41 +30,42 @@ namespace Brain_Fodder.LevelStuff
                 SpawnBall();
             }
             spawnGoal();
-
-
-            int n = 30 + (int)(MyMath.rng() * 170);
-            float xPadding = 0.1f;
+            float platformLength = 40f + MyMath.rng() * 10f;
+            int n = 50+(int)(MyMath.rng()*130);
             for (int i = 0; i < n; i++)
             {
-                Vector2 pos = new Vector2(0, 150);
                 float t = ((i) / (float)(n));
-                pos.X = t*size.X*(1 - 2 * xPadding) + xPadding * size.X;
-                float rot = 0f;
-                t *= 2.0f;
-                t -= 1.0f;
-                pos.Y += t*t*700f;
-                if (pos.Y < 180) continue;
-                float spinSpeed = 1f+MathF.Abs(t)*1.0f;
-                if (t < 0.0f) spinSpeed *= -1;
-                spawnPlatform(pos, spinSpeed, 0*t*MathF.Tau, MyMath.Mix(new Vector3(1f, 0.5f, 0.3f), color , MathF.Abs(t)), MathF.Abs(t)*160f);
+                Console.WriteLine(t);
+                float x = MathF.Sin(t * MathF.Tau);
+                float y = MathF.Cos(t * MathF.Tau);
+                Vector2 pos = center+new Vector2(x, y)*150f;
+                //if (pos.Y < 180) continue;
+                float spinSpeed = 1f;
+
+                //if (t > 0.9f) continue;
+                spawnPlatform(pos, spinSpeed, t*MathF.Tau, MyMath.Mix(new Vector3(1f, 0.5f, 0.3f), color , MathF.Sin(t*MathF.Tau*3)), platformLength, 250f);
+                //spawnPlatform(pos, spinSpeed, t * MathF.Tau, MyMath.Mix(new Vector3(1f, 0.5f, 0.3f), color, MathF.Sin(t * MathF.Tau*3)), platformWidth, 240f);
 
             }
         }
 
 
-        private void spawnPlatform(Vector2 pos, float spin, float rot, Vector3 col, float length)
+        private void spawnPlatform(Vector2 pos, float spin, float angle, Vector3 col, float length, float r)
         {
 
 
             Entity circle2 = CreateEntity(
                 new PositionComponent(pos),
-                new RectangleComponent(new Vector2(length, 4), rot),
+                new RectangleComponent(new Vector2(length, 20), angle),
                 new VelocityComponent(MyMath.rng2DMinusPlus() * 0.0f),
                 new ColourComponent(col),
                 new collidableTag(),
                 new SpinComponent(spin),
                 new PhysicsComponent(0.0f, 1.2f),
                 new GravityComponent(0f),
+                //new SpinAroundComponent(center, r, 5f, angle),
+                new PushOutFromOnCollision(center, 50f),
+                new AnimationComponent(),
                 new GravityOnVictoryTag()
             );
         }
@@ -73,8 +73,8 @@ namespace Brain_Fodder.LevelStuff
         private void spawnGoal()
         {
             Entity goal = CreateEntity(
-                new PositionComponent(new Vector2(center.X, -150)),
-                new RectangleComponent(new Vector2(4000, 200), 0f),
+                new PositionComponent(center),
+                new RingComponent(550, 20f),
                 new collidableTag(),
                 new VelocityComponent(new Vector2(0f, 0f)),
                 new GoalTag(),
@@ -90,13 +90,13 @@ namespace Brain_Fodder.LevelStuff
 
             if (ballColor.Length < 1.0) ballColor.Normalize();
             Entity player = CreateEntity(
-                new PositionComponent(new Vector2(center.X, size.Y*0.93f)),
-                new CircleComponent(16),
+                new PositionComponent(center),
+                new CircleComponent(25),
                 //new RectangleComponent(new Vector2(22, 22), 0),
                 new VelocityComponent(velocity),
                 new ColourComponent(ballColor),
                 new collidableTag(),
-                new PhysicsComponent(1.0f, 0.96f),
+                new PhysicsComponent(1.0f, 1.0175f),
                 new GravityComponent(600),
                 new GravityOnVictoryTag(),
                 //new KillerTag(),

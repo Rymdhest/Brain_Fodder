@@ -21,30 +21,12 @@ class SoundManager
     private static WaveOutEvent outputDevice = new WaveOutEvent();
     private static NAudio.Wave.SampleProviders.MixingSampleProvider mixer;
     private static List<List<int>> currentSongChords;
-    private static readonly List<(string, int, int)> SongMelodyMap = new List<(string, int, int)>
-    
-{
-    ("Avicii - ID (Levels)", 1, -1),
-    ("eminem-stan", 3, -1),
-    ("jingle-bells-keyboard", 1, 0),
-    ("kalinka", 1, -1),
-    ("Mario Bros. - Super Mario Bros. Theme", 0, -1),
-    ("Zelda - Ocarina of Time - Lost Woods Theme", 1, -1),
-    ("YoureBeautiful", 3, 0),
-    ("UndertaleMegalovania", 0, -1),
-    ("FinalCountdown", 2, -1),
-    ("Blue", 8  , -1),
-    ("Gigi D'Agostino - L'Amour Toujours", 0 , -1),
-    ("Trillium Hardtekk", 0 , -1),
-
-
-};
     private static Dictionary<string, short[]> cachedWavSounds = new Dictionary<string, short[]>();
 
     private static int currentSongShift = 0;
     private static int noteIndex = 0;
     private static float cooldownTimer = 0;
-    private static float COOLDOWN_DURATION = 0.03f;
+    private static float COOLDOWN_DURATION = 0.05f;
     
     public SoundManager()
     {
@@ -55,14 +37,17 @@ class SoundManager
         };
         outputDevice.Init(mixer);
         outputDevice.Play();
-        var song = SongMelodyMap[1];
-        currentSongChords = SoundManager.LoadSong(song.Item1, song.Item2, song.Item3);
+        currentSongChords = SoundManager.LoadSong(SongList.GetRandomSong());
 
         PreloadSounds();
     }
 
-    public static List<List<int>> LoadSong(string fileName, int targetTrack, int shift)
+    public static List<List<int>> LoadSong(Song song)
     {
+        string fileName = song.FileName;
+        int shift = song.Shift;
+        int targetTrack = song.TrackID;
+
         currentSongShift = shift;
         var songData = new List<List<int>>();
         var midiFile = new NAudio.Midi.MidiFile("MIDI\\" + fileName+".mid", false);

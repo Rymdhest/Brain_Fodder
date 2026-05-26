@@ -1,6 +1,7 @@
 ﻿
 using Dino_Engine.ECS.Components;
 using Dino_Engine.ECS.ECS_Architecture;
+using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,17 +18,11 @@ namespace Dino_Engine.ECS.Systems
         }
         protected override void UpdateEntity(EntityView entity, ECSWorld world, float deltaTime)
         {
-            if (entity.Has<RingComponent>())
+            if (entity.Has<ShapeComponent>())
             {
-                var ring = entity.Get<RingComponent>();
-                ring.radius += entity.Get<SizeChangerComponent>().change * deltaTime;
-                entity.Set(ring);
-            }
-            if (entity.Has<CircleComponent>())
-            {
-                var circle = entity.Get<CircleComponent>();
-                circle.radius += entity.Get<SizeChangerComponent>().change * deltaTime;
-                entity.Set(circle);
+                var shape = entity.Get<ShapeComponent>();
+                shape.size += new Vector2( entity.Get<SizeChangerComponent>().change * deltaTime);
+                entity.Set(shape);
             }
         }
     }

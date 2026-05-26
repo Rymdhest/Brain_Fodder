@@ -6,6 +6,7 @@ in vec2 v_LocalPos;
 
 uniform vec2 iResolution;
 uniform float iTime;
+uniform vec3 main_color;
 
 #define PI 3.14159265
 #define FAR 60.
@@ -435,7 +436,7 @@ void main(){
 	    float ambience = 0.35*ao + fre*fre*.25;
 
         // Object texturing, coloring and shading.
-	    vec3 texCol = vec3(0.2, 0.1, 0.3);
+	    vec3 texCol = main_color;
 
         // Tones down the pinkish limestone\granite color.
         //texCol *= mix(vec3(.7, 1, 1.3), vec3(1), snNoBump.y*.5 + .5);

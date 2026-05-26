@@ -6,6 +6,7 @@ in vec2 v_LocalPos;
 
 uniform vec2 iResolution;
 uniform float iTime;
+uniform vec3 main_color;
 
 #define TIME        iTime
 #define RESOLUTION  iResolution
@@ -227,7 +228,7 @@ vec3 effect(vec2 p, vec2 q) {
 }
 
 void main() {
-vec2 fragCoord = v_LocalPos*iResolution;
+    vec2 fragCoord = v_LocalPos*iResolution;
   vec2 q = fragCoord/RESOLUTION.xy; 
   vec2 p = -1. + 2. * q;
   p.x *= RESOLUTION.x/RESOLUTION.y;

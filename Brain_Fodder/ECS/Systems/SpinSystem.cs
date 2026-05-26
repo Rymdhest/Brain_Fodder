@@ -8,18 +8,19 @@ namespace Dino_Engine.ECS.Systems
     public class SpinSystem : SystemBase
     {
         public SpinSystem()
-            : base(new BitMask(typeof(RectangleComponent), typeof(SpinComponent)))
+            : base(new BitMask(typeof(ShapeComponent), typeof(SpinComponent)))
         {
         }
 
 
         protected override void UpdateEntity(EntityView entity, ECSWorld world, float deltaTime)
         {
-            Vector2 size = entity.Get<RectangleComponent>().size;
-            float rotation = entity.Get<RectangleComponent>().rotation;
+            Vector2 size = entity.Get<ShapeComponent>().size;
+            var shape = entity.Get<ShapeComponent>();
             float spin = entity.Get<SpinComponent>().spin;
-
-            entity.Set<RectangleComponent>(new RectangleComponent(size,rotation+deltaTime* spin));
+            
+            shape.rotation += deltaTime * spin;
+            entity.Set(shape);
 
 
         }

@@ -31,7 +31,12 @@ namespace SpaceEngine.Util
         {
             return rand.NextSingle();
         }
-  
+        public static Vector2 Mix(Vector2 x, Vector2 y, float a) => x * (1.0f - a) + y * a;
+
+        public static Vector3 Mix(Vector3 x, Vector3 y, float a) => x * (1.0f - a) + y * a;
+
+        public static Vector4 Mix(Vector4 x, Vector4 y, float a) => x * (1.0f - a) + y * a;
+
         public static Vector3 reflect(Vector3 vector, Vector3 normal)
         {
             return vector-(2f * Vector3.Dot(normal, vector)*normal);

@@ -6,6 +6,7 @@ in vec2 v_LocalPos;
 
 uniform vec2 iResolution;
 uniform float iTime;
+uniform vec3 main_color;
 
 #define NOISE_PERIOD 16. // needs to be an integer value
 #define PI 3.14159265359

@@ -5,6 +5,7 @@ in vec2 v_LocalPos;
 
 uniform vec2 iResolution;
 uniform float iTime;
+uniform vec3 main_color;
 
 #define LEVEL_NUMBER 10.
 
@@ -16,10 +17,10 @@ uniform float iTime;
 vec3 mColors[NB_COLORS];
 void init()
 {
-    mColors[0] = vec3(0.3,.00,.50)*.9;
-    mColors[1] = vec3(0.3,.01,.50)*.8;
-    mColors[2] = vec3(0.3,.00,.49)*.7;
-    mColors[3] = vec3(0.3,.00,.49)*.6;
+    mColors[0] = main_color*.6;
+    mColors[1] = main_color*.5;
+    mColors[2] = main_color*.4;
+    mColors[3] = main_color*.3;
 }
 
 float fbm(float x)

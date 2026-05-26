@@ -6,6 +6,7 @@ in vec2 v_LocalPos;
 
 uniform vec2 iResolution;
 uniform float iTime;
+uniform vec3 main_color;
 
 
 
@@ -51,7 +52,7 @@ void main()
         }
         s /= 100.0;
 
-        vec3 col = 0.5 + 0.5*cos( vec3(0.0,0.4,0.8) + 2.5 + s.z*6.2831 );
+        vec3 col = 0.5 + 0.5*cos( main_color + 2.5 + s.z*6.2831 );
 
         col *= 0.5 + 0.5*s.y;
         col *= s.x;

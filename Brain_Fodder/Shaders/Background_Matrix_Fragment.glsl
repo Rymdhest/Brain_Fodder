@@ -6,6 +6,7 @@ in vec2 v_LocalPos;
 
 uniform vec2 iResolution;
 uniform float iTime;
+uniform vec3 main_color;
 
 const int ITERATIONS = 30;   //use less value if you need more performance
 const float SPEED = .1;
@@ -189,7 +190,7 @@ vec3 rain(vec3 ro3, vec3 rd3, float time) {
                             a *= clamp((chars_count - 0.5 - c) / 2., 0., 1.);  //tail fade
                             if (a > 0.) {
                                 float attenuation = 1. + pow(0.06*tmin/t3_to_t2, 2.);
-                                vec3 col = (c == 0. ? vec3(0.67, 0.6, 1.) : vec3(0.3, 0.1, 0.50)) / attenuation;
+                                vec3 col = (c == 0. ? main_color : main_color) / attenuation;
                                 float a1 = result.a;
                                 result.a = a1 + (1. - a1) * a;
                                 result.xyz = (result.xyz * a1 + col * (1. - a1) * a) / result.a;

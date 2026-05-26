@@ -8,6 +8,7 @@ using OpenTK.Windowing.Desktop;
 using SpaceEngine.Modelling;
 using SpaceEngine.RenderEngine;
 using SpaceEngine.Util;
+using System.Drawing;
 using System.Net.NetworkInformation;
 
 namespace Brain_Fodder.Rendering
@@ -39,10 +40,37 @@ namespace Brain_Fodder.Rendering
         public Vector3 color;
         public float rotation;
     }
-
+    public struct ShapeRenderCommand
+    {
+        public Vector2 position;
+        public Vector2 size;
+        public Vector4 fillColor;
+        public Vector4 borderColor;
+        public int sides;
+        public float rotation;
+        public float borderSize;
+    }
+    public enum Background
+    {
+        Random,
+        Hex,
+        Ocean,
+        Landscape,
+        Stars,
+        Matrix,
+        Fish,
+        Snow,
+        WinterLandscape,
+        Ravine,
+        Aurora,
+        Abstract,
+        BlackHole,
+        Zaps
+    }
     internal class MasterRenderer
     {
         public static ShaderProgram rectangleShader = new ShaderProgram("Simple_Vertex", "Rectangle_Fragment");
+        public static ShaderProgram shapeShader = new ShaderProgram("Simple_Vertex", "Shape_Fragment");
         public static ShaderProgram circleShader = new ShaderProgram("Simple_Vertex", "Circle_Fragment");
         public static ShaderProgram RingShader = new ShaderProgram("Simple_Vertex", "Ring_Fragment");
         public static ShaderProgram VictoryShader = new ShaderProgram("Simple_Vertex", "Victory_Fragment");
@@ -57,21 +85,17 @@ namespace Brain_Fodder.Rendering
         public static List<CircleRenderCommand> circles = new List<CircleRenderCommand>();
         public static List<RectangleRenderCommand> rectangles = new List<RectangleRenderCommand>();
         public static List<TriangleRenderCommand> triangles = new List<TriangleRenderCommand>();
+        public static List<ShapeRenderCommand> shapes = new List<ShapeRenderCommand>();
 
 
-        public MasterRenderer() {
-            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Hex_Fragment");
-            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Ocean_Fragment");
-            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Landscape_Fragment");
-            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Stars_Fragment");
-            backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Matrix_Fragment");
-            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Fish_Fragment");
-            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Snow_Fragment");
-            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_WinterLandscape_Fragment");
-            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Ravine_Fragment");
-            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Aurora_Fragment");
-            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_Abstract_Fragment");
-            //backGroundShader = new ShaderProgram("Simple_Vertex", "Background_BlackHole_Fragment");
+        public MasterRenderer(Background background) {
+
+            if (background == Background.Random)
+            {
+                Array values = Enum.GetValues(typeof(Background));
+                background = (Background)values.GetValue(MyMath.rand.Next(values.Length-1)+1)!;
+            }
+            backGroundShader = new ShaderProgram("Simple_Vertex", "Background_"+background.ToString()+"_Fragment");
 
 
             float[] positions = { -0.5f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f };
@@ -122,7 +146,7 @@ namespace Brain_Fodder.Rendering
             rendercircles();
             renderRectangles();
             renderTriangles();
-
+            renderShapes();
             renderVictory();
 
             finishFrame();
@@ -134,6 +158,7 @@ namespace Brain_Fodder.Rendering
             backGroundShader.bind();
             backGroundShader.loadUniformMatrix4f("uProjection", projection);
             backGroundShader.loadUniformVector2f("iResolution", Engine.Instance.outerResolution);
+            backGroundShader.loadUniformVector3f("main_color", Engine.Instance.currentLevel.color);
             backGroundShader.loadUniformFloat("iTime", Engine.Instance.ecsWorld.GetEntityView(Engine.Instance.ecsWorld.GetSingleton<GameStateComponent>()).Get<GameStateComponent>().LevelTime);
             backGroundShader.loadUniformMatrix4f("modelMatrix", MyMath.createTransformationMatrix(new Vector2(0, 0), 0f, Engine.Instance.outerResolution));
 
@@ -198,6 +223,29 @@ namespace Brain_Fodder.Rendering
             circleShader.unBind();
             circles.Clear();
         }
+
+        private void renderShapes()
+        {
+            shapeShader.bind();
+            foreach (ShapeRenderCommand shape in shapes)
+            {
+                shapeShader.loadUniformMatrix4f("uProjection", projection);
+                shapeShader.loadUniformVector4f("u_color", shape.fillColor);
+                shapeShader.loadUniformVector4f("u_border_color", shape.borderColor);
+                shapeShader.loadUniformVector2f("u_size", shape.size);
+                shapeShader.loadUniformInt("u_sides", shape.sides);
+                shapeShader.loadUniformFloat("u_border_width", shape.borderSize);
+                shapeShader.loadUniformMatrix4f("modelMatrix", MyMath.createTransformationMatrix(shape.position, shape.rotation, shape.size));
+
+                glModel glmodel = unitSquare;
+                GL.BindVertexArray(glmodel.getVAOID());
+                GL.EnableVertexAttribArray(0);
+                GL.DrawElements(PrimitiveType.Triangles, glmodel.getVertexCount(), DrawElementsType.UnsignedInt, 0);
+            }
+            shapeShader.unBind();
+            shapes.Clear();
+        }
+
         private void renderTriangles()
         {
             rectangleShader.bind();

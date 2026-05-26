@@ -9,6 +9,7 @@ using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using SpaceEngine.RenderEngine;
+using SpaceEngine.Util;
 using System.Diagnostics;
 using System.Text;
 
@@ -37,15 +38,18 @@ namespace Brain_Fodder
 
         public Engine()
         {
-
+            Random rand = new Random();
+            int seed = rand.Next();
+            Console.WriteLine($"Initializing Engine with seed: {seed}");
+            MyMath.rand = new Random(seed);
             _instance = this;
             windowHandler = new WindowHandler(outerResolution);
-            masterRenderer = new MasterRenderer();
 
             ComponentTypeRegistry.AutoRegisterAllComponents();
             SystemRegistry.AutoRegisterAllSystems();
             ecsWorld = new ECSWorld();
             ecsWorld.SpawnLevel();
+            masterRenderer = new MasterRenderer(currentLevel.background);
 
             ecsWorld.ApplyDeferredCommands();
             soundManager = new SoundManager();

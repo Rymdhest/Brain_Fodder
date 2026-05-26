@@ -20,28 +20,21 @@ namespace Dino_Engine.ECS.Systems
         {
             var position = entity.Get<PositionComponent>();
             var spin = entity.Get<SpinAroundComponent>();
-            var sound = entity.Get<SoundComponent>();
 
-            var aniamtion = entity.Get<AppearenceAnimationComponent>();
             // 1. Increment timer
-            spin.t += deltaTime;
+            spin.angle += (deltaTime* MathF.Tau) /spin.Duration;
 
-            if (spin.t > spin.Duration) {
-                spin.t = spin.t%spin.Duration;
-
-
-                SoundManager.Play( SoundManager.GenerateSound(sound.note));
-                aniamtion.t = 0f;
+            if (spin.angle > MathF.Tau) {
+                spin.angle = spin.angle%MathF.Tau;
             }
 
             // Handle ping-pong logic (0 -> 1 -> 0)
-            position.value.X = spin.center.X+ MathF.Sin((spin.t/spin.Duration)*MathF.Tau)*spin.radius;
-            position.value.Y = spin.center.Y + MathF.Cos((spin.t / spin.Duration) * MathF.Tau)*spin.radius;
+            position.value.X = spin.center.X + MathF.Sin(spin.angle)*spin.radius;
+            position.value.Y = spin.center.Y + MathF.Cos(spin.angle)*spin.radius;
 
 
 
             entity.Set(position);
-            entity.Set(aniamtion);
             entity.Set(spin);
         }
 

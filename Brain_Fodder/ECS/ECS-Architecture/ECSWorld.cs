@@ -53,7 +53,9 @@ namespace Dino_Engine.ECS.ECS_Architecture
             //spawnPianoLeve6();
 
             //spawnPianoLevel();
-            Engine.Instance.currentLevel = new PlatformLevel();
+            //Engine.Instance.currentLevel = new PlatformLevel();
+            //Engine.Instance.currentLevel = new CircleLevel();
+            Engine.Instance.currentLevel = new CollapsingCirclesLevel();
         }
 
         private void spawnPianoLeve6()
@@ -116,7 +118,7 @@ namespace Dino_Engine.ECS.ECS_Architecture
                     new SoundComponent(i),
                     new AppearenceAnimationComponent(color3*new Vector3(4f, 2f, 3f), color3, ballSize*2.0f, ballSize, 1f),
                     new KillableTag(),
-                    new SpinAroundComponent(center,r, duration)
+                    new SpinAroundComponent(center,r, duration, 0f)
                 );
             }
 
@@ -561,7 +563,7 @@ namespace Dino_Engine.ECS.ECS_Architecture
 
 
             Entity spawner = CreateEntity(
-                new SpawnerComponent(0.3f),
+                new IntervalActionComponent(0.3f),
                 new PositionComponent(center)
                 );
 
@@ -783,8 +785,8 @@ namespace Dino_Engine.ECS.ECS_Architecture
 
             foreach (int compId in oldArchetype.Mask.GetSetBits())
             {
-                var array = oldArchetype.ComponentArrays[compId];
-                var componentValue = array.GetType().GetMethod("Get")!.Invoke(array, new object[] { oldIndex });
+                dynamic array = oldArchetype.ComponentArrays[compId];
+                var componentValue = array[oldIndex];
                 components[compId] = componentValue;
             }
 
@@ -792,7 +794,22 @@ namespace Dino_Engine.ECS.ECS_Architecture
             components[newComponentId] = newComponent;
 
             // Remove from old archetype (swap-remove)
+            // Before removing, check if another entity will be swapped into this position
+            int removeIndex = oldIndex;
+            int lastIndex = oldArchetype.Count - 1;
+            Entity? swappedEntity = null;
+            if (removeIndex != lastIndex)
+            {
+                swappedEntity = oldArchetype.entities[lastIndex];
+            }
+
             oldArchetype.RemoveEntityAt(oldIndex);
+
+            // Update the swapped entity's location if one occurred
+            if (swappedEntity != null)
+            {
+                entityLocations[swappedEntity.Value.Id] = (oldArchetype, removeIndex);
+            }
 
             // Add to new archetype
             newArchetype.AddEntity(entity, components);
@@ -829,12 +846,34 @@ namespace Dino_Engine.ECS.ECS_Architecture
             for (int i = 0; i < ComponentTypeRegistry.Count; i++)
             {
                 if (i == compID || !currentLocation.archetype.Mask.Has(i)) continue;
-                var array = currentLocation.archetype.ComponentArrays[i];
-                var method = array.GetType().GetMethod("Get");
-                componentMap[i] = method.Invoke(array, new object[] { currentLocation.index });
+                // Re-fetch current location to handle cases where previous deferred commands updated the entity's location
+                var freshLocation = entityLocations[entity.Id];
+                // Verify the component exists in the fresh location's archetype before accessing
+                if (!freshLocation.archetype.Mask.Has(i)) continue;
+                dynamic array = freshLocation.archetype.ComponentArrays[i];
+                componentMap[i] = array[freshLocation.index];
+            }
+
+            // Re-fetch current location in case it was updated by previous deferred commands
+            currentLocation = entityLocations[entity.Id];
+
+            // Before removing, check if another entity will be swapped into this position
+            int removeIndex = currentLocation.index;
+            int lastIndex = currentLocation.archetype.Count - 1;
+            Entity? swappedEntity = null;
+            if (removeIndex != lastIndex)
+            {
+                swappedEntity = currentLocation.archetype.entities[lastIndex];
             }
 
             currentLocation.archetype.RemoveEntityAt(currentLocation.index);
+
+            // Update the swapped entity's location if one occurred
+            if (swappedEntity != null)
+            {
+                entityLocations[swappedEntity.Value.Id] = (currentLocation.archetype, removeIndex);
+            }
+
             newArchetype.AddEntity(entity, componentMap);
             entityLocations[entity.Id] = (newArchetype, newArchetype.Count - 1);
         }

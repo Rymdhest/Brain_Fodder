@@ -42,8 +42,9 @@ namespace Dino_Engine.ECS.Systems
 
                 // --- PHASE 1: STABILIZED POSITIONAL CORRECTION ---
                 // Instead of fixing 100%, we fix a percentage and ignore tiny overlaps
+                Vector2 effectiveNormal = manifold.IsInnerBoundary ? -manifold.Normal : manifold.Normal;
                 float correctionMagnitude = Math.Max(manifold.Penetration - slop, 0.0f) / totalInvMass * percent;
-                Vector2 correction = manifold.Normal * correctionMagnitude;
+                Vector2 correction = effectiveNormal * correctionMagnitude;
 
                 var posA = viewA.Get<PositionComponent>();
                 var posB = viewB.Get<PositionComponent>();
@@ -59,7 +60,7 @@ namespace Dino_Engine.ECS.Systems
                 var velB = viewB.Get<VelocityComponent>();
 
                 Vector2 relativeVelocity = velA.value - velB.value;
-                float velAlongNormal = Vector2.Dot(relativeVelocity, manifold.Normal);
+                float velAlongNormal = Vector2.Dot(relativeVelocity, effectiveNormal);
 
                 if (velAlongNormal > 0) continue;
 
@@ -69,7 +70,7 @@ namespace Dino_Engine.ECS.Systems
                 float j = -(1 + e) * velAlongNormal;
                 j /= totalInvMass;
 
-                Vector2 impulse = manifold.Normal * j;
+                Vector2 impulse = effectiveNormal * j;
 
                 velA.value += impulse * physA.InvMass;
                 velB.value -= impulse * physB.InvMass;

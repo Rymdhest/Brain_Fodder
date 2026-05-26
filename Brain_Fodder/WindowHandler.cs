@@ -8,7 +8,7 @@ using OpenTK.Input;
 using OpenTK.Audio.OpenAL;
 namespace SpaceEngine.RenderEngine
 {
-    public class WindowHandler
+    public class  WindowHandler
     {
         private string title = "Brain Fodder";
         public static GameWindow? gameWindow = null;

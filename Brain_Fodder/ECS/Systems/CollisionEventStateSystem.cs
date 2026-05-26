@@ -12,6 +12,7 @@ namespace Dino_Engine.ECS.Systems
         {
             Priority = -3;
         }
+
         public override void Update(ECSWorld world, float deltaTime)
         {
             Entity singletonEntity = world.GetSingleton<CollisionBufferComponent>();
@@ -25,24 +26,27 @@ namespace Dino_Engine.ECS.Systems
                 var manifold = buffer.Manifolds[i];
                 var key = CollisionBufferComponent.GetPairKey(manifold.EntityA, manifold.EntityB);
 
-                // Track this frame's active pairs inside the component's set
-                buffer.CurrentCollisions.Add(key);
-
-                if (!buffer.PreviousCollisions.Contains(key))
+                // HashSet.Add returns true if the key was actually added.
+                // It returns false if the key was already in the set.
+                // This perfectly deduplicates multiple manifolds for the same pair!
+                if (buffer.CurrentCollisions.Add(key))
                 {
-                    buffer.EnterEvents.Add(new CollisionPair
+                    if (!buffer.PreviousCollisions.Contains(key))
                     {
-                        EntityA = manifold.EntityA,
-                        EntityB = manifold.EntityB
-                    });
-                }
-                else
-                {
-                    buffer.StayEvents.Add(new CollisionPair
+                        buffer.EnterEvents.Add(new CollisionPair
+                        {
+                            EntityA = manifold.EntityA,
+                            EntityB = manifold.EntityB
+                        });
+                    }
+                    else
                     {
-                        EntityA = manifold.EntityA,
-                        EntityB = manifold.EntityB
-                    });
+                        buffer.StayEvents.Add(new CollisionPair
+                        {
+                            EntityA = manifold.EntityA,
+                            EntityB = manifold.EntityB
+                        });
+                    }
                 }
             }
 
@@ -55,7 +59,7 @@ namespace Dino_Engine.ECS.Systems
                 {
                     buffer.ExitEvents.Add(new CollisionPair
                     {
-                        EntityA = oldPair.Item1,
+                        EntityA = oldPair.Item1, // Assuming key is a Tuple
                         EntityB = oldPair.Item2
                     });
                 }
@@ -73,7 +77,6 @@ namespace Dino_Engine.ECS.Systems
             // Write the completely mutated data back to the world
             world.GetEntityView(singletonEntity).Set<CollisionBufferComponent>(buffer);
         }
-
 
         protected override void UpdateEntity(EntityView entity, ECSWorld world, float deltaTime)
         {

@@ -29,6 +29,12 @@ namespace Dino_Engine.ECS.Systems
                 var velocity = entity.Get<VelocityComponent>();
                 velocity.value += MyMath.rng2DMinusPlus() * 100f;
                 entity.Set<VelocityComponent>(velocity);
+
+                if (entity.Has<SpinAroundComponent>())
+                {
+                    world.RemoveComponentFromEntity(entity.Entity, typeof(SpinAroundComponent));
+                }
+
             }
         }
     }

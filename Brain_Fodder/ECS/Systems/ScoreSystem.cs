@@ -17,17 +17,17 @@ namespace Dino_Engine.ECS.Systems
         {
             var buffer = world.GetComponent<CollisionBufferComponent>(world.GetSingleton<CollisionBufferComponent>());
 
-            foreach (var manifold in buffer.Manifolds)
+            foreach (var collisionEvent in buffer.EnterEvents)
             {
                 bool isGoal = false;
-                if (IsGoal(world.GetEntityView(manifold.EntityA), world.GetEntityView(manifold.EntityB))
-                || IsGoal(world.GetEntityView(manifold.EntityB), world.GetEntityView(manifold.EntityA)))
+                if (IsGoal(world.GetEntityView(collisionEvent.EntityA), world.GetEntityView(collisionEvent.EntityB))
+                || IsGoal(world.GetEntityView(collisionEvent.EntityB), world.GetEntityView(collisionEvent.EntityA)))
                 {
                     isGoal = true;
                 }
                 if (isGoal)
                 {
-                    Console.WriteLine("GOAL!");
+                    Console.WriteLine("GOAL! " + collisionEvent.EntityA + " " + collisionEvent.EntityB);
                     var gameStateComponent = world.GetComponent<GameStateComponent>( world.GetSingleton<GameStateComponent>());
                     gameStateComponent.score += 1;
                     world.GetEntityView(world.GetSingleton<GameStateComponent>()).Set<GameStateComponent>(gameStateComponent);

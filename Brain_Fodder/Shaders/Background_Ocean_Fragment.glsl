@@ -6,6 +6,7 @@ in vec2 fragCoord;
 
 uniform vec2 iResolution;
 uniform float iTime;
+uniform vec3 main_color;
 
 float wavedx(vec2 position, vec2 direction, float time, float freq){
     float x = dot(direction, position) * freq + time;
@@ -122,7 +123,7 @@ void main()
     vec3 sun = vec3(-0.6, 0.5,-0.3); 
     float i = max(0.0, 1.2/(length(sun-dir)+1.0));
     vec3 col = vec3(pow(i, 1.9), pow(i, 1.0), pow(i, .8)) * 0.85;
-    col = mix(col, vec3(0.0,0.39,0.62),(1.0-dir.y)*0.9);   
+    col = mix(col, main_color*0.35,(1.0-dir.y)*0.9);   
 
      if (dir.y > 0.0){//water suf
         float d = (pos.y-3.0)/dir.y;	

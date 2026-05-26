@@ -22,6 +22,7 @@ namespace Dino_Engine.ECS.Components
         public Vector2 Normal;      
         public float Penetration;
         public float Impulse;
+        public bool IsInnerBoundary;
     }
 
     public struct CollisionBufferComponent : IComponent

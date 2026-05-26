@@ -6,11 +6,12 @@ in vec2 v_LocalPos;
 
 uniform vec2 iResolution;
 uniform float iTime;
+uniform vec3 main_color;
 
 #define S(a, b, t) smoothstep(a,b,t)
 #define LAYER_COUNT 8.
 #define MOON_SIZE .1
-#define TREE_COL vec3(.8, .8, 1.)
+#define TREE_COL main_color
 #define ORBIT_SPEED .025
 #define SCROLL_SPEED .3
 #define ROT -0.785398

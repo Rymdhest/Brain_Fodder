@@ -19,10 +19,10 @@ namespace Dino_Engine.ECS.Systems
         {
             var buffer = world.GetComponent<CollisionBufferComponent>(world.GetSingleton<CollisionBufferComponent>());
 
-            foreach (var manifold in buffer.Manifolds)
+            foreach (var collisionEvent in buffer.EnterEvents)
             {
-                proccessEntity(world.GetEntityView(manifold.EntityA), world.GetEntityView(manifold.EntityB));
-                proccessEntity(world.GetEntityView(manifold.EntityB), world.GetEntityView(manifold.EntityA));
+                proccessEntity(world.GetEntityView(collisionEvent.EntityA), world.GetEntityView(collisionEvent.EntityB));
+                proccessEntity(world.GetEntityView(collisionEvent.EntityB), world.GetEntityView(collisionEvent.EntityA));
             }
         }
 

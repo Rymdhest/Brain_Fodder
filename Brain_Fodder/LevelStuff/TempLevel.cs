@@ -19,26 +19,6 @@ namespace Brain_Fodder.LevelStuff
 
         }
 
-        public override string GetDescription()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override string[] GetHashTags()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override string[] GetTags()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override string GetTitle()
-        {
-            throw new NotImplementedException();
-        }
-
         public override void LoadLevel(ECSWorld world)
         {
             Entity b = world.CreateEntity(

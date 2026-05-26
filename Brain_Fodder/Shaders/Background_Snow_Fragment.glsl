@@ -5,6 +5,7 @@ layout (location = 0) out vec4 fragColor;
 in vec2 v_LocalPos;
 
 uniform vec2 iResolution;
+uniform vec3 main_color;
 uniform float iTime;
 
 float snow(vec2 uv, float scale)
